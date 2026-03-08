@@ -1,0 +1,56 @@
+# 使用openEuler作为基础镜像，目前自带python3.11
+FROM openeuler/openeuler:latest
+# 设置环境变量
+ENV PYTHONUNBUFFERED=1
+ENV DJANGO_SETTINGS_MODULE=api.settings.settings
+
+# 创建并设置工作目录
+RUN mkdir /review_api
+WORKDIR /review_api
+
+# 设置软件源为国内镜像（华为云）
+RUN sed -i 's|^baseurl=https://repo.openeuler.org|baseurl=https://mirrors.huaweicloud.com|g' /etc/yum.repos.d/openEuler.repo
+
+# 安装系统依赖和监控工具
+RUN dnf update -y && dnf install -y \
+    pkgconfig \
+    mysql-devel \
+    gcc \
+    gcc-c++ \
+    python3-devel \
+    python3-pip \
+    curl \
+    nmap-ncat \
+    iputils \
+    wget \
+    procps-ng \
+    htop \
+    vim \
+    git \
+    && dnf clean all
+
+# 设置 pip 国内源（清华源）
+RUN pip3 install --upgrade pip -i https://pypi.tuna.tsinghua.edu.cn/simple
+# 复制 requirements.txt 并安装 Python 依赖
+COPY ../requirements.txt /review_api/
+RUN pip3 install --no-cache-dir -r requirements.txt -i https://pypi.tuna.tsinghua.edu.cn/simple
+
+# 复制项目文件
+COPY ../api /review_api/api
+COPY ../env.py /review_api/
+COPY ../manage.py /review_api/
+COPY ../uwsgi.ini /review_api/
+COPY ../entrypoint.sh /review_api/
+COPY ../docker/health.sh /usr/local/bin/
+COPY ../static /review_api/static
+
+# 做健康检查
+RUN chmod +x /usr/local/bin/health.sh
+HEALTHCHECK --interval=30s --timeout=10s --start-period=40s --retries=3 \
+    CMD /usr/local/bin/health.sh
+
+# 暴露端口
+EXPOSE 8000
+
+RUN chmod +x /review_api/entrypoint.sh
+ENTRYPOINT ["/review_api/entrypoint.sh"]
