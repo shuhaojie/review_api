@@ -45,11 +45,11 @@ class BaseResponse:
 
     @staticmethod
     def deleted(data=None, message="Deletion successful", **kwargs):
-        return BaseResponse.success(data, message, status.HTTP_201_CREATED, **kwargs)
+        return BaseResponse.success(data, message, status.HTTP_200_OK, **kwargs)
 
     @staticmethod
     def modified(data=None, message="Modification successful", **kwargs):
-        return BaseResponse.success(data, message, status.HTTP_201_CREATED, **kwargs)
+        return BaseResponse.success(data, message, status.HTTP_200_OK, **kwargs)
 
     @staticmethod
     def id_required(message="ID not provided", **kwargs):
