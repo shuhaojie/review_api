@@ -1,5 +1,6 @@
+import json
 import pika
-from common_util.json_tools import json_dumps
+# from common_util.json_tools import json_dumps  # 包不可用，改用标准库 json
 from api.common.utils.logger import logger
 from env import env
 
@@ -54,7 +55,7 @@ class RabbitMQMessageQueue:
             if self.connection is None or self.connection.is_closed:
                 self._connect()
             # Serialize message
-            message_body = json_dumps(message_data, ensure_ascii=False)
+            message_body = json.dumps(message_data, ensure_ascii=False)
             # Publish message
             self.channel.basic_publish(
                 exchange='',
