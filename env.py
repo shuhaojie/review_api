@@ -44,12 +44,12 @@ class ENV:
     EMAIL_HOST = config("EMAIL_HOST", default="smtp.qq.com")  # Or your email service provider
     EMAIL_PORT = config("EMAIL_PORT", default="465", cast=int)
     EMAIL_USE_SSL = config("EMAIL_USE_SSL", default=True, cast=bool)
-    EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="2386677465@qq.com")  # Your email
-    EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="gdmaomlmoxohdjci")  # Email authorization code, not password
+    EMAIL_HOST_USER = config("EMAIL_HOST_USER", default="")  # Your email
+    EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", default="")  # Email authorization code, set via .env
     VERIFICATION_CODE_EXPIRE = config("VERIFICATION_CODE_EXPIRE", default="300", cast=int)  # Verification code expiration time
 
     # File upload configuration
-    SUPER_USER_LIST = config("SUPER_USER_LIST", default="shuhaojie,wangchangming,wanglepeng,wangpeng", cast=Csv())
+    SUPER_USER_LIST = config("SUPER_USER_LIST", default="", cast=Csv())
     MAX_UPLOAD_FILES = config("MAX_UPLOAD_FILES", default=5, cast=int)
     MAX_FILE_SIZE = config("MAX_FILE_SIZE", default=10, cast=int)
     DOMAIN_NAME = config("DOMAIN_NAME", default="http://vectasurge.com")
