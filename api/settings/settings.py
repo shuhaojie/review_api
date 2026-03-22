@@ -14,7 +14,7 @@ SECRET_KEY = constant.SECRET_KEY
 DEBUG = env.DEBUG
 APPEND_SLASH = False  # No longer automatically add trailing slash
 
-ALLOWED_HOSTS = ["*"]
+ALLOWED_HOSTS = ["*"] if env.DEBUG else env.ALLOWED_HOSTS
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -25,6 +25,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'health_check',
     'rest_framework',
+    'rest_framework_simplejwt.token_blacklist',
     'drf_yasg',
     'corsheaders',
     'user',
@@ -36,6 +37,7 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -71,11 +73,11 @@ REST_FRAMEWORK = {
 }
 
 SIMPLE_JWT = {
-    # 1. access token expiration time (default 5 minutes)
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=5),
+    # 1. access token expiration time
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=60),
 
-    # 2. refresh token expiration time (default 1 day)
-    'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
+    # 2. refresh token expiration time
+    'REFRESH_TOKEN_LIFETIME': timedelta(days=7),
 
     # 3. Whether rotation is allowed (optional)
     'ROTATE_REFRESH_TOKENS': True,
