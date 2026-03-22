@@ -1,4 +1,33 @@
+# IDE
 .idea
 .vscode
-__pycache__
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+
+# Environment & secrets
 .env
+env.py
+.claudeignore
+
+# Virtual environment
+venv/
+.venv/
+
+# Logs
+api/logs/
+
+# Uploaded files
+api/data/upload/
+
+# Database
+*.sqlite3
+
+# macOS
+.DS_Store
+
+# Static files (collected)
+static/
