@@ -6,7 +6,8 @@ from api.app.base.http.error_response import ErrorBaseResponse
 from api.app.base.views import BaseAPIView
 from api.app.base.http.response import BaseResponse
 from api.app.error.models import TextError, FinancialError
-from api.app.error.serializers import ErrorListRequestSerializer, ErrorListResponseSerializer, ErrorItemSerializer, \
+from api.app.error.serializers.request import ErrorListRequestSerializer
+from api.app.error.serializers.response import ErrorListResponseSerializer, ErrorItemSerializer, \
     FinanceErrorItemSerializer
 from api.common.utils.logger import logger
 
