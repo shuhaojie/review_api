@@ -18,13 +18,13 @@ except Exception as e:
 class ENV:
     # Required items (no default value, ImproperlyConfigured will be raised if missing)
     DEBUG = config("DEBUG", default=True, cast=bool)
-    # ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="*", cast=Csv())
+    ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="*", cast=Csv())
     # mysql configuration
     DB_NAME = config("DB_NAME", default="review")
     DB_USER = config("DB_USER", default="root")
     DB_PASSWORD = config("DB_PASSWORD", default="root")
     DB_HOST = config("DB_HOST", default="localhost")
-    DB_PORT = config("DB_PORT", default="3306")
+    DB_PORT = config("DB_PORT", default="5432")
 
     # redis configuration
     REDIS_HOST = config("REDIS_HOST", default="redis")
