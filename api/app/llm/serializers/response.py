@@ -4,18 +4,15 @@ from api.app.user.models import User
 
 
 class PromptListResponseSerializer(serializers.ModelSerializer):
-    # 对create_time字段进行调整
     create_time = serializers.DateTimeField(format='%Y-%m-%d %H:%M:%S', read_only=True)
 
     class Meta:
         model = Prompt
         fields = ["id", "name", "content", "create_time", "creator_id", "creator_name", "is_active"]
-        # ★ 新增
 
     creator_name = serializers.SerializerMethodField(read_only=True)
 
     def get_creator_name(self, obj):
-        # obj.creator_id 就是用户主键，反向查 User 表
         if obj.creator_id is None:
             return ""
         try:
@@ -35,11 +32,8 @@ class LLMProviderResponseSerializer(serializers.ModelSerializer):
     creator_name = serializers.SerializerMethodField(read_only=True)
 
     def get_creator_name(self, obj):
-        # obj.creator_id 就是用户主键，反向查 User 表
         if obj.creator_id is None:
             return ""
-
-        # 方式2：不改动视图，直接跨表一条 SQL（简单直观）
         from django.contrib.auth import get_user_model
         User = get_user_model()
         try:
@@ -48,7 +42,6 @@ class LLMProviderResponseSerializer(serializers.ModelSerializer):
             return ""
 
 
-# 读出（带名称）
 class LLMTestReadResponseSerializer(serializers.ModelSerializer):
     prompt_name = serializers.CharField(source='prompt.name', read_only=True)
     provider_name = serializers.CharField(source='provider.name', read_only=True)
@@ -60,11 +53,8 @@ class LLMTestReadResponseSerializer(serializers.ModelSerializer):
     creator_name = serializers.SerializerMethodField(read_only=True)
 
     def get_creator_name(self, obj):
-        # obj.creator_id 就是用户主键，反向查 User 表
         if obj.creator_id is None:
             return ""
-
-        # 方式2：不改动视图，直接跨表一条 SQL（简单直观）
         from django.contrib.auth import get_user_model
         User = get_user_model()
         try:
@@ -81,10 +71,8 @@ class TestSampleResponseSerializer(serializers.ModelSerializer):
     creator_name = serializers.SerializerMethodField(read_only=True)
 
     def get_creator_name(self, obj):
-        # obj.creator_id 就是用户主键，反向查 User 表
         if obj.creator_id is None:
             return ""
-        # 方式2：不改动视图，直接跨表一条 SQL（简单直观）
         from django.contrib.auth import get_user_model
         User = get_user_model()
         try:
@@ -101,10 +89,8 @@ class TestSampleDetailResponseSerializer(serializers.ModelSerializer):
     creator_name = serializers.SerializerMethodField(read_only=True)
 
     def get_creator_name(self, obj):
-        # obj.creator_id 就是用户主键，反向查 User 表
         if obj.creator_id is None:
             return ""
-        # 方式2：不改动视图，直接跨表一条 SQL（简单直观）
         from django.contrib.auth import get_user_model
         User = get_user_model()
         try:

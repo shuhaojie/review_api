@@ -7,14 +7,14 @@ from api.app.llm.views import (PromptListView, PromptDetailView, ProviderListVie
 urlpatterns = [
     path('/prompt', PromptListView.as_view()),
     path('/prompt/<int:pk>', PromptDetailView.as_view()),
-    path('/prompt/batch-delete', PromptBatchDeleteView.as_view()),  # 新增批量删除
+    path('/prompt/batch-delete', PromptBatchDeleteView.as_view()),
 
     path('/provider', ProviderListView.as_view()),
     path('/provider/<int:pk>', ProviderDetailView.as_view()),
 
-    path('/test', TestListView.as_view()),  # 测试历史
-    path('/test/export', ExportLLMTestView.as_view()),  # 新增导出接口
+    path('/test', TestListView.as_view()),  # Test history
+    path('/test/export', ExportLLMTestView.as_view()),  # Export test results
 
-    # 将参数设为系统默认
+    # Set the given item as the system default
     path('/set-default/<int:pk>', SetDefaultView.as_view()),
 ]

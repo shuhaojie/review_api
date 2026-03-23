@@ -26,29 +26,28 @@ from api.common.server.mq import RabbitMQMessageQueue
 
 
 class FileUploadView(BaseAPIView):
-    """文件上传接口, 将文件保存下来, 并返回一个uuid给前端"""
+    """Upload files and return a UUID for each, to be referenced when creating a review task."""
     permission_classes = [IsAuthenticated]
     parser_classes = [MultiPartParser, FormParser]
 
     @swagger_auto_schema(
-        operation_summary="文件上传",
-        operation_description="文件上传，返回uuid，在任务创建接口将uuid再传过来",
-        consumes=["multipart/form-data"],  # 告诉 Swagger 这是文件表单上传
+        operation_summary="Upload files",
+        operation_description="Upload one or more files. Returns a UUID per file to be used when creating a review task.",
+        consumes=["multipart/form-data"],
         manual_parameters=[
             openapi.Parameter(
                 name="files",
                 in_=openapi.IN_FORM,
                 type=openapi.TYPE_FILE,
-                description="文件列表（支持多文件上传）",
+                description="Files to upload (multi-file supported)",
                 required=True,
             ),
         ],
         responses={
-            200: openapi.Response(description="创建成功", schema=MultiFileUploadResponseSerializer)
+            200: openapi.Response(description="Upload successful", schema=MultiFileUploadResponseSerializer)
         }
     )
     def post(self, request, *args, **kwargs):
-        # 将 request 传递给 serializer 的 context
         serializer = MultiFileUploadRequestSerializer(
             data=request.data,
             context={'request': request}
@@ -63,11 +62,11 @@ class FileTaskView(BaseAPIView):
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
-        operation_summary="创建任务",
-        operation_description="创建上传任务",
+        operation_summary="Create review task",
+        operation_description="Create a document review task using previously uploaded file UUIDs.",
         request_body=DocTaskRequestSerializer,
         responses={
-            201: openapi.Response(description="创建成功", schema=BaseResponseSerializer),
+            201: openapi.Response(description="Task created", schema=BaseResponseSerializer),
         }
     )
     def post(self, request, *args, **kwargs):
@@ -80,23 +79,23 @@ class FileTaskView(BaseAPIView):
             file_info_list = result['file_info']
             documents = result['documents']
             try:
-                # 发送消息到mq队列
+                # Publish messages to the MQ queue
                 queue = RabbitMQMessageQueue(
-                    queue_name=env.MQ_QUEUE_NAME  # 只需要队列名称
+                    queue_name=env.MQ_QUEUE_NAME
                 )
                 all_success = True
                 provider_set = LLMProvider.objects.filter(is_deleted=False, is_active=True)
                 if not provider_set:
-                    raise Exception("没有可使用大模型")
+                    raise Exception("No active LLM provider found.")
                 if len(provider_set) > 1:
-                    raise Exception("找到多个大模型")
+                    raise Exception("Multiple active LLM providers found.")
                 provider = provider_set.last()
 
                 prompt_set = Prompt.objects.filter(is_deleted=False, is_active=True)
                 if not prompt_set:
-                    raise Exception("没有可使用提示词")
+                    raise Exception("No active prompt found.")
                 if len(prompt_set) > 1:
-                    raise Exception("找到多个提示词")
+                    raise Exception("Multiple active prompts found.")
                 prompt = prompt_set.last()
 
                 llm_config = provider.config
@@ -116,49 +115,44 @@ class FileTaskView(BaseAPIView):
                     }
                     logger.info(f"message_data:{message_data}")
                     success = queue.send_message(message_data)
-                    # 有一个消息推送失败, 即视为失败
                     if not success:
                         all_success = False
-                        logger.error(f"发送消息失败: doc_id={file_info['doc_id']}")
-                # 关闭mq队列
+                        logger.error(f"Failed to publish message: doc_id={file_info['doc_id']}")
                 queue.close_connection()
                 if all_success:
-                    return BaseResponse.success(message="文件上传成功")
+                    return BaseResponse.success(message="Files uploaded and review tasks created.")
                 else:
-                    # 如果失败, 需要将Doc表的相关数据全部删掉
+                    # Roll back: delete all Doc records created in this request
                     for document in documents:
                         document.delete()
-                    return BaseResponse.error(message="文件上传失败")
+                    return BaseResponse.error(message="Failed to create review tasks.")
             except Exception as e:
                 logger.error(e)
-                # 如果失败, 需要将Doc表的相关数据全部删掉
                 for document in documents:
                     document.delete()
         return BaseResponse.error(serializer.errors)
 
 
 class RetryTaskView(BaseAPIView):
-    """任务重试接口：针对上传失败或处理失败的文档重新推送 MQ 消息"""
+    """Re-publish an MQ message for a document whose review failed or was not processed."""
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
-        operation_summary="任务重试",
-        operation_description="传入 doc_id，重新将对应文档信息推送至 MQ，实现失败任务重试",
+        operation_summary="Retry review task",
+        operation_description="Re-publish the MQ message for a failed or unprocessed document by doc_id.",
         request_body=SingleDocRequestSerializer,
         responses={
-            200: openapi.Response(description="重试成功", schema=BaseResponseSerializer),
-            400: openapi.Response(description="参数错误"),
-            404: openapi.Response(description="文档不存在或无权访问"),
+            200: openapi.Response(description="Retry succeeded", schema=BaseResponseSerializer),
+            400: openapi.Response(description="Invalid parameters"),
+            404: openapi.Response(description="Document not found or access denied"),
         }
     )
     def post(self, request, *args, **kwargs):
         doc_id = request.data.get("doc_id")
         if not doc_id:
-            return BaseResponse.error(message="缺少 doc_id 参数")
+            return BaseResponse.error(message="doc_id is required.")
 
-        # 校验文档是否存在且属于用户有权限的项目
         try:
-            # 获取用户有权限的所有项目
             user_projects = Project.objects.filter(
                 Q(viewers__id=request.user.id) | Q(owner_id=request.user.id)
             )
@@ -169,16 +163,15 @@ class RetryTaskView(BaseAPIView):
                 project_id__in=user_projects
             )
         except Doc.DoesNotExist:
-            # 管理员可重试所有文档，普通用户只能重试有权限的
+            # Superusers can retry any document; regular users are restricted to their projects
             if request.user.is_superuser:
                 try:
                     doc = Doc.objects.get(id=doc_id, is_deleted=False)
                 except Doc.DoesNotExist:
-                    return BaseResponse.error(message="文档不存在")
+                    return BaseResponse.error(message="Document not found.")
             else:
-                return BaseResponse.error(message="文档不存在或无权限重试")
+                return BaseResponse.error(message="Document not found or access denied.")
 
-        # 组装消息体
         message_data = {
             "message_id": str(uuid.uuid4()),
             "file_name": doc.file_name,
@@ -186,51 +179,49 @@ class RetryTaskView(BaseAPIView):
             "file_uuid": doc.file_uuid,
         }
 
-        # 推送 MQ
         try:
             queue = RabbitMQMessageQueue(queue_name=env.MQ_QUEUE_NAME)
             success = queue.send_message(message_data)
             queue.close_connection()
         except Exception as e:
-            logger.error(f"任务重试推送 MQ 失败: doc_id={doc_id}, error={e}")
-            return BaseResponse.error(message="任务重试失败，请稍后重试")
+            logger.error(f"Failed to publish retry message: doc_id={doc_id}, error={e}")
+            return BaseResponse.error(message="Failed to retry the task. Please try again later.")
 
         if success:
-            return BaseResponse.success(message="任务重试成功")
+            return BaseResponse.success(message="Task retry submitted successfully.")
         else:
-            logger.error(f"任务重试推送 MQ 返回失败: doc_id={doc_id}")
-            return BaseResponse.error(message="任务重试失败")
+            logger.error(f"MQ publish returned failure: doc_id={doc_id}")
+            return BaseResponse.error(message="Failed to retry the task.")
 
 
 class DocDownloadView(BaseAPIView):
-    """下载文件原文件接口"""
+    """Download the original file for a document."""
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
-        operation_summary="下载原文件",
-        operation_description="根据 doc_id 下载对应的原始文件",
+        operation_summary="Download original file",
+        operation_description="Download the original uploaded file by doc_id.",
         query_serializer=SingleDocRequestSerializer(),
         manual_parameters=[
             openapi.Parameter(
                 name="doc_id",
                 in_=openapi.IN_QUERY,
                 type=openapi.TYPE_STRING,
-                description="文档 ID",
+                description="Document ID",
                 required=True,
             ),
         ],
         responses={
-            200: openapi.Response(description="文件流"),
-            400: openapi.Response(description="参数错误"),
-            404: openapi.Response(description="文档不存在或无权限"),
+            200: openapi.Response(description="File stream"),
+            400: openapi.Response(description="Invalid parameters"),
+            404: openapi.Response(description="Document not found or access denied"),
         }
     )
     def get(self, request):
         doc_id = request.GET.get("doc_id")
         if not doc_id:
-            return BaseResponse.error(message="缺少 doc_id 参数")
+            return BaseResponse.error(message="doc_id is required.")
 
-        # 校验文档是否存在且用户有权限
         try:
             user_projects = Project.objects.filter(
                 Q(viewers__id=request.user.id) | Q(owner_id=request.user.id)
@@ -241,58 +232,51 @@ class DocDownloadView(BaseAPIView):
                 project_id__in=user_projects
             )
         except Doc.DoesNotExist:
-            # 管理员可下载所有文档，普通用户只能下载有权限的
+            # Superusers can download any document; regular users are restricted to their projects
             if request.user.is_superuser:
                 try:
                     doc = Doc.objects.get(id=doc_id, is_deleted=False)
                 except Doc.DoesNotExist:
-                    return BaseResponse.error(message="文档不存在")
+                    return BaseResponse.error(message="Document not found.")
             else:
-                return BaseResponse.error(message="文档不存在或无权限下载")
+                return BaseResponse.error(message="Document not found or access denied.")
 
-        # 读取文件并返回文件流
         try:
-            # 构建正确的文件路径
             file_path = os.path.join(BASE_DIR, 'data', 'upload', doc.file_uuid)
             logger.info(f"file_path: {file_path}")
-            # 使用FileResponse，它会自动处理文件名编码和内容类型
             response = FileResponse(open(file_path, 'rb'), content_type='application/octet-stream')
-            # 正确设置Content-Disposition
             response['Content-Disposition'] = f'attachment; filename="{quote(doc.file_name)}"'
             return response
         except Exception as e:
-            logger.error(f"下载文件失败: doc_id={doc_id}, error={e}")
-            return BaseResponse.error(message="文件下载失败")
+            logger.error(f"File download failed: doc_id={doc_id}, error={e}")
+            return BaseResponse.error(message="File download failed.")
 
 
 class DocListView(BaseAPIView):
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
-        operation_summary="审核历史",
-        operation_description="用户所在的项目的文件，都可以看到",
+        operation_summary="Review history",
+        operation_description="Returns all documents belonging to projects the current user has access to.",
         query_serializer=BaseGetRequestSerializer(),
         responses={
-            200: openapi.Response(description="获取成功", schema=DocListResponseSerializer)
+            200: openapi.Response(description="Success", schema=DocListResponseSerializer)
         }
     )
     def get(self, request):
-        # 首先检查用户是否为管理员
         if request.user.is_superuser:
-            # 管理员可以查看所有文档
+            # Superusers can see all documents
             q = Doc.objects.filter(is_deleted=False).select_related('project_id', 'owner')
         else:
-            # 非管理员只能查看其有权限的项目中的文档
+            # Regular users see only documents in their accessible projects
             logger.info(f"user_id:{request.user.id}")
             user_id = request.user.id
             project_list = Project.objects.filter(Q(viewers__id=user_id) | Q(owner_id=user_id)).distinct()
-            # 使用select_related预取关联对象，避免N+1查询问题
+            # Use select_related to avoid N+1 queries
             q = Doc.objects.filter(project_id__in=project_list, is_deleted=False).select_related('project_id', 'owner')
-        # 获取搜索参数
         query = request.GET.get('q', '')
         if query:
             q = q.filter(file_name__icontains=query).distinct()
-        # 帮忙补充代码
         return PaginationHelper.paginate_queryset(q, request, DocMetaSerializer)
 
 
@@ -300,22 +284,22 @@ class DocDetailView(BaseAPIView):
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
-        operation_summary="文件详情",
-        operation_description="根据 doc_id 获取文件详情",
+        operation_summary="Document detail",
+        operation_description="Retrieve detailed information for a document by doc_id.",
         query_serializer=SingleDocRequestSerializer(),
         manual_parameters=[
             openapi.Parameter(
                 name="doc_id",
                 in_=openapi.IN_QUERY,
                 type=openapi.TYPE_STRING,
-                description="文档 ID",
+                description="Document ID",
                 required=True,
             ),
         ],
         responses={
-            200: openapi.Response(description="文件详情", schema=DocMetaSerializer),
-            400: openapi.Response(description="参数错误"),
-            404: openapi.Response(description="文档不存在或无权限"),
+            200: openapi.Response(description="Document detail", schema=DocMetaSerializer),
+            400: openapi.Response(description="Invalid parameters"),
+            404: openapi.Response(description="Document not found or access denied"),
         }
     )
     def get(self, request):
@@ -324,7 +308,7 @@ class DocDetailView(BaseAPIView):
         doc = Doc.objects.get(id=doc_id, is_deleted=False)
         serializer = DocMetaSerializer(doc)
         data = serializer.data
-        # 添加文件路径
+        # Append the file URL
         file_uuid = doc.file_uuid.split(".")[0]
         data["file_path"] = f"{env.DOMAIN_NAME}/upload/{file_uuid}.pdf"
         return BaseResponse.success(data=data)

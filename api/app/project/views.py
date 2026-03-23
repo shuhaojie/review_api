@@ -2,7 +2,6 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from django.db.models import Q
 from rest_framework.permissions import IsAuthenticated
-from rest_framework_simplejwt.authentication import JWTAuthentication
 from api.common.http.token import FlexibleJWTAuthentication
 from api.app.doc.serializers.response import DocListResponseSerializer, DocMetaSerializer
 from api.app.doc.models import Doc
@@ -22,19 +21,18 @@ class ProjectListView(BaseAPIView):
     authentication_classes = [FlexibleJWTAuthentication]
 
     @swagger_auto_schema(
-        operation_summary="Get project list",
-        operation_description="Get project list",
+        operation_summary="List projects",
+        operation_description="Return a paginated list of all projects accessible to the current user.",
         query_serializer=BaseGetRequestSerializer(),
         responses={
-            200: openapi.Response(description="Get successful", schema=ProjectListResponseSerializer)
+            200: openapi.Response(description="Success", schema=ProjectListResponseSerializer)
         }
     )
     def get(self, request):
         logger.info(f"username:{request.user.username}")
-        # If it's an administrator, can see all projects
+        # Superusers see all projects; regular users see only projects they own or are viewers of
         if request.user.is_superuser:
             qs = Project.objects.filter(is_deleted=False)
-        # If it's a non-administrator, can only see projects they can view, either created by themselves or in the visible users
         else:
             qs = Project.objects.filter(
                 Q(owner=request.user) | Q(viewers=request.user),
@@ -47,10 +45,10 @@ class ProjectListView(BaseAPIView):
 
     @swagger_auto_schema(
         operation_summary="Create project",
-        operation_description="Create project",
+        operation_description="Create a new project and assign viewer permissions.",
         request_body=CreateProjectSerializer,
         responses={
-            201: openapi.Response(description="Creation successful", schema=BaseResponseSerializer)
+            201: openapi.Response(description="Created successfully", schema=BaseResponseSerializer)
         }
     )
     def post(self, request):
@@ -61,7 +59,7 @@ class ProjectListView(BaseAPIView):
         )
         if serializer.is_valid():
             serializer.save(owner=request.user)
-            return BaseResponse.success(message="Project creation successful")
+            return BaseResponse.created(message="Project created successfully.")
         return BaseResponse.error(serializer.errors)
 
 
@@ -70,11 +68,11 @@ class ProjectDetailView(BaseAPIView):
     authentication_classes = [FlexibleJWTAuthentication]
 
     @swagger_auto_schema(
-        operation_summary="Get project file list",
-        operation_description="Get project file list",
+        operation_summary="List project documents",
+        operation_description="Return a paginated list of all documents belonging to the specified project.",
         query_serializer=BaseGetRequestSerializer(),
         responses={
-            200: openapi.Response(description="Get successful", schema=DocListResponseSerializer)
+            200: openapi.Response(description="Success", schema=DocListResponseSerializer)
         }
     )
     def get(self, request, *args, **kwargs):
@@ -88,12 +86,12 @@ class ProjectDetailView(BaseAPIView):
 
     @swagger_auto_schema(
         operation_summary="Delete project",
-        operation_description="Delete project",
+        operation_description="Soft-delete the specified project.",
         responses={
-            201: openapi.Response(description="Deletion successful", schema=BaseResponseSerializer)
+            200: openapi.Response(description="Deleted successfully", schema=BaseResponseSerializer)
         }
     )
     def delete(self, request, *args, **kwargs):
         logger.info(f"username:{request.user.username}")
         Project.objects.filter(id=kwargs['pk']).update(is_deleted=True)
-        return BaseResponse.success(message="Deletion successful")
+        return BaseResponse.deleted(message="Project deleted successfully.")

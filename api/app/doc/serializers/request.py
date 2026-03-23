@@ -1,4 +1,3 @@
-# serializers.py
 import os
 import uuid
 from rest_framework import serializers
@@ -13,18 +12,17 @@ from api.app.base.serializers.request import BaseRequestValidationSerializer
 class MultiFileUploadRequestSerializer(BaseRequestValidationSerializer):
     files = serializers.ListField(
         child=serializers.FileField(max_length=100, allow_empty_file=False),
-        help_text="文件列表"
+        help_text="List of files to upload"
     )
 
     def validate_files(self, files):
-        """验证文件列表"""
+        """Validate the uploaded file list."""
         if not files:
-            raise serializers.ValidationError("至少需要上传一个文件")
+            raise serializers.ValidationError("At least one file is required.")
 
         if len(files) > env.MAX_UPLOAD_FILES:
-            raise serializers.ValidationError(f"一次最多上传{env.MAX_UPLOAD_FILES}个文件")
+            raise serializers.ValidationError(f"You may upload at most {env.MAX_UPLOAD_FILES} files at a time.")
 
-        # 验证每个文件
         for file in files:
             self._validate_single_file(file)
 
@@ -32,51 +30,46 @@ class MultiFileUploadRequestSerializer(BaseRequestValidationSerializer):
 
     @staticmethod
     def _validate_single_file(file):
-        """验证单个文件"""
+        """Validate a single uploaded file."""
         if not isinstance(file, UploadedFile):
-            raise serializers.ValidationError("无效的文件格式")
+            raise serializers.ValidationError("Invalid file format.")
 
-        # 验证文件大小 (5MB = 5 * 1024 * 1024 bytes)
         max_size = int(env.MAX_FILE_SIZE) * 1024 * 1024
         if file.size > max_size:
             raise serializers.ValidationError(
-                f"文件:{file.name}，大小超过{env.MAX_FILE_SIZE}MB限制"
+                f"File '{file.name}' exceeds the {env.MAX_FILE_SIZE}MB size limit."
             )
 
-        # 验证文件扩展名
         allowed_extensions = ['.docx', '.pdf']
         file_extension = os.path.splitext(file.name)[1].lower()
 
         if file_extension not in allowed_extensions:
             raise serializers.ValidationError(
-                f"文件:{file.name}，格式不支持，只允许上传 {', '.join(allowed_extensions)} 格式"
+                f"File '{file.name}' has an unsupported format. Only {', '.join(allowed_extensions)} files are allowed."
             )
 
-        # 验证文件内容类型（额外的安全校验）
+        # Additional MIME type validation
         allowed_content_types = [
             'application/pdf',
             'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-            'application/msword'  # 虽然你只要求docx，但有时旧版word也会被上传
+            'application/msword'  # Legacy Word format sometimes submitted alongside docx
         ]
 
         if hasattr(file, 'content_type') and file.content_type:
             if file.content_type not in allowed_content_types:
                 raise serializers.ValidationError(
-                    f"文件:{file.name}，内容类型不被支持"
+                    f"File '{file.name}' has an unsupported content type."
                 )
 
     def create(self, validated_data):
         files = validated_data.get('files', [])
-        # 获取项目
-        created_documents, file_info_list = [], []
+        file_info_list = []
         for file in files:
-            # 生成文件信息
             file_name = file.name
             file_extension = os.path.splitext(file_name)[1].lower()
             f_uuid = str(uuid.uuid4())
-            # 生成唯一文件名
             file_uuid = f"{f_uuid}{file_extension}"
-            # 注意这里不能存绝对路径, 否则Django会报错
+            # Must use a relative path here; Django raises an error for absolute paths
             save_path = f"data/upload/{file_uuid}"
             default_storage.save(save_path, file)
 
@@ -89,7 +82,7 @@ class MultiFileUploadRequestSerializer(BaseRequestValidationSerializer):
 
 class DocTaskRequestSerializer(BaseRequestValidationSerializer):
     class FileItemSerializer(BaseRequestValidationSerializer):
-        """文件项序列化器"""
+        """Serializer for a single file entry."""
         file_name = serializers.CharField()
         file_uuid = serializers.CharField()
 
@@ -102,7 +95,7 @@ class DocTaskRequestSerializer(BaseRequestValidationSerializer):
         try:
             Project.objects.get(id=value, is_deleted=False)
         except Project.DoesNotExist:
-            raise serializers.ValidationError(f"项目id {value} 不存在")
+            raise serializers.ValidationError(f"Project with id {value} does not exist.")
 
         return value
 
@@ -113,20 +106,18 @@ class DocTaskRequestSerializer(BaseRequestValidationSerializer):
         project = Project.objects.get(id=project_id)
         created_documents, file_info_list = [], []
         for f in file_list:
-            # 生成文件信息
             file_uuid = f['file_uuid']
             file_name = f['file_name']
-            # 创建文档记录
             doc = Doc.objects.create(
                 file_name=file_name,
                 file_uuid=file_uuid,
                 owner=user,
                 project_id=project,
-                status=0  # 排队中
+                status=0  # Queued
             )
             DocStatus.objects.create(
                 doc_id=doc.id,
-                parse_status=0  # 排队中
+                parse_status=0  # Queued
             )
             created_documents.append(doc)
             file_info_list.append({

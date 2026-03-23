@@ -20,16 +20,15 @@ class RegisterView(BaseAPIView):
     authentication_classes = []
 
     @swagger_auto_schema(
-        operation_summary="User Registration",
-        operation_description="User registration interface, creates account after verifying email verification code",
+        operation_summary="Register",
+        operation_description="Register a new account after verifying the email confirmation code.",
         request_body=RegisterRequestSerializer,
         responses={
-            201: openapi.Response(description="Registration successful", schema=BaseResponseSerializer)
+            201: openapi.Response(description="Registered successfully", schema=BaseResponseSerializer)
         }
     )
     def post(self, request):
         serializer = RegisterRequestSerializer(data=request.data)
-        # is_valid: Validates if parameters are legal, first validates fields, then validates [field_name_validator], and finally validates the validate method
         if serializer.is_valid():
             email = serializer.validated_data['email']
             verification_code = serializer.validated_data['verification_code']
@@ -38,7 +37,7 @@ class RegisterView(BaseAPIView):
             if not is_valid:
                 return BaseResponse.error(message)
             serializer.save()
-            return BaseResponse.created(message="Registration successful")
+            return BaseResponse.created(message="Registered successfully")
         return BaseResponse.error(serializer.errors)
 
 
@@ -47,11 +46,11 @@ class VerifyCodeView(BaseAPIView):
     authentication_classes = []
 
     @swagger_auto_schema(
-        operation_summary="Get Verification Code",
-        operation_description="Get verification code via email during registration",
+        operation_summary="Send verification code",
+        operation_description="Send a one-time verification code to the provided email address.",
         request_body=EmailVerificationRequestSerializer,
         responses={
-            201: openapi.Response(description="Verification code sent successfully", schema=BaseResponseSerializer)
+            201: openapi.Response(description="Verification code sent", schema=BaseResponseSerializer)
         }
     )
     def post(self, request):
@@ -60,25 +59,21 @@ class VerifyCodeView(BaseAPIView):
             return BaseResponse.error(serializer.errors)
         email = serializer.validated_data['email']
         try:
-            # Generate verification code
             verification_code = EmailVerification.generate_verification_code()
             logger.info(f"verification_code={verification_code}")
-            # Send email
             success = EmailVerification.send_verification_email(email, verification_code)
             if success:
-                logger.info(f"send verification code[{verification_code}] success")
-                # Save verification code to cache
+                logger.info(f"Verification code [{verification_code}] sent successfully.")
                 EmailVerification.save_verification_code(email, verification_code)
-                logger.info(f"save_verification_code={verification_code}")
                 return BaseResponse.created(
-                    message="Verification code sent successfully"
+                    message="Verification code sent"
                 )
             else:
-                logger.info(f"send verification code[{verification_code}] failed.")
-                return BaseResponse.error("Failed to send verification code, please try again later")
+                logger.info(f"Failed to send verification code [{verification_code}].")
+                return BaseResponse.error("Failed to send verification code. Please try again later.")
         except Exception as e:
             logger.error(f"Exception when sending verification code: {str(e)}")
-            return BaseResponse.error("System exception, please try again later")
+            return BaseResponse.error("An unexpected error occurred. Please try again later.")
 
 
 class LoginView(TokenObtainPairView):
@@ -87,8 +82,8 @@ class LoginView(TokenObtainPairView):
     serializer_class = CustomTokenObtainPairSerializer
 
     @swagger_auto_schema(
-        operation_summary="User Login",
-        operation_description="User login",
+        operation_summary="Login",
+        operation_description="Authenticate with username and password and receive JWT tokens.",
         request_body=LoginRequestSerializer,
         responses={
             200: openapi.Response(description="Login successful", schema=LoginResponseSerializer)
@@ -100,8 +95,7 @@ class LoginView(TokenObtainPairView):
             return BaseResponse.success(data=response.data, message="Login successful")
         except AuthenticationFailed as e:
             logger.exception(e)
-            # Username or password error
-            return BaseResponse.error(message="Account or password error")
+            return BaseResponse.error(message="Invalid username or password.")
         except Exception as e:
             logger.exception(e)
-            return BaseResponse.error(message="Login failed")
+            return BaseResponse.error(message="Login failed.")

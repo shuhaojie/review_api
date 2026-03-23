@@ -16,20 +16,18 @@ class ErrorListView(BaseAPIView):
     permission_classes = [IsAuthenticated]
 
     @swagger_auto_schema(
-        operation_summary="错误列表页",
-        operation_description="错误列表页, 展示具体的错误信息",
+        operation_summary="Review errors",
+        operation_description="List all text and financial errors for a given document.",
         query_serializer=ErrorListRequestSerializer(),
         responses={
-            200: openapi.Response(description="获取成功", schema=ErrorListResponseSerializer)
+            200: openapi.Response(description="Success", schema=ErrorListResponseSerializer)
         }
     )
     def get(self, request, *args, **kwargs):
         logger.info(f"user_id:{request.user.id}")
         doc_id = request.query_params.get("doc_id")
         q = TextError.objects.filter(doc_id=doc_id, is_deleted=False)
-        # 使用响应序列化器而不是请求序列化器，并设置many=True
         data = ErrorItemSerializer(q, many=True).data
         q = FinancialError.objects.filter(doc_id=doc_id, is_deleted=False, status=0)
-        # 使用响应序列化器而不是请求序列化器，并设置many=True
         finance_data = FinanceErrorItemSerializer(q, many=True).data
         return BaseResponse.success(data=data, finance_data=finance_data)

@@ -90,7 +90,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 
 
 class FlexibleJWTAuthentication(JWTAuthentication):
-    """支持直接粘贴 token（不需要 Bearer 前缀）"""
+    """Accepts raw tokens without the 'Bearer' prefix."""
 
     def get_raw_token(self, header):
         parts = header.split()

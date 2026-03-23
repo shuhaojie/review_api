@@ -4,7 +4,7 @@ from api.app.base.serializers.request import BaseRequestValidationSerializer
 
 
 class CreateProjectSerializer(BaseRequestValidationSerializer):
-    name = serializers.CharField(max_length=32, error_messages={"max_length": "Length cannot exceed 32 characters"})
+    name = serializers.CharField(max_length=32, error_messages={"max_length": "Project name must be at most 32 characters."})
     viewers = serializers.ListField(
         child=serializers.IntegerField(),
         allow_empty=False,
@@ -13,13 +13,12 @@ class CreateProjectSerializer(BaseRequestValidationSerializer):
     def validate(self, attrs):
         user = self.context['request'].user
         if Project.objects.filter(name=attrs['name'], owner=user).exists():
-            raise serializers.ValidationError('You have already created a project with the same name')
+            raise serializers.ValidationError('You already have a project with that name.')
         return attrs
 
     def create(self, validated_data):
-        viewers = validated_data.pop('viewers', [])  # What is passed in is [1,2,3]
+        viewers = validated_data.pop('viewers', [])
         project = Project.objects.create(**validated_data)
-        # 3. Then handle the many-to-many relationship (assuming viewers is a ManyToManyField pointing to User)
         if viewers:
-            project.viewers.set(viewers)  # One-time association
+            project.viewers.set(viewers)
         return project
