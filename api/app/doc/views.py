@@ -35,14 +35,6 @@ class FileUploadView(BaseAPIView):
         operation_description="文件上传，返回uuid，在任务创建接口将uuid再传过来",
         consumes=["multipart/form-data"],  # 告诉 Swagger 这是文件表单上传
         manual_parameters=[
-            # Header 参数
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="Bearer token 格式: Bearer {token}, 通过user/login获取 jwt token",
-                required=True,
-            ),
             openapi.Parameter(
                 name="files",
                 in_=openapi.IN_FORM,
@@ -74,16 +66,6 @@ class FileTaskView(BaseAPIView):
         operation_summary="创建任务",
         operation_description="创建上传任务",
         request_body=DocTaskRequestSerializer,
-        manual_parameters=[
-            # Header 参数
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="Bearer token 格式: Bearer {token}, 通过user/login获取 jwt token",
-                required=True,
-            ),
-        ],
         responses={
             201: openapi.Response(description="创建成功", schema=BaseResponseSerializer),
         }
@@ -163,15 +145,6 @@ class RetryTaskView(BaseAPIView):
         operation_summary="任务重试",
         operation_description="传入 doc_id，重新将对应文档信息推送至 MQ，实现失败任务重试",
         request_body=SingleDocRequestSerializer,
-        manual_parameters=[
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="Bearer token 格式: Bearer {token}, 通过user/login获取 jwt token",
-                required=True,
-            ),
-        ],
         responses={
             200: openapi.Response(description="重试成功", schema=BaseResponseSerializer),
             400: openapi.Response(description="参数错误"),
@@ -239,13 +212,6 @@ class DocDownloadView(BaseAPIView):
         query_serializer=SingleDocRequestSerializer(),
         manual_parameters=[
             openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="Bearer token 格式: Bearer {token}, 通过user/login获取 jwt token",
-                required=True,
-            ),
-            openapi.Parameter(
                 name="doc_id",
                 in_=openapi.IN_QUERY,
                 type=openapi.TYPE_STRING,
@@ -306,16 +272,6 @@ class DocListView(BaseAPIView):
         operation_summary="审核历史",
         operation_description="用户所在的项目的文件，都可以看到",
         query_serializer=BaseGetRequestSerializer(),
-        manual_parameters=[
-            # Header 参数
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="Bearer token 格式: Bearer {token}, 通过user/login获取 jwt token",
-                required=True,
-            ),
-        ],
         responses={
             200: openapi.Response(description="获取成功", schema=DocListResponseSerializer)
         }
@@ -348,13 +304,6 @@ class DocDetailView(BaseAPIView):
         operation_description="根据 doc_id 获取文件详情",
         query_serializer=SingleDocRequestSerializer(),
         manual_parameters=[
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="Bearer token 格式: Bearer {token}, 通过user/login获取 jwt token",
-                required=True,
-            ),
             openapi.Parameter(
                 name="doc_id",
                 in_=openapi.IN_QUERY,

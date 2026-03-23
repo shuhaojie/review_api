@@ -122,15 +122,6 @@ class UserListView(BaseAPIView):
     @swagger_auto_schema(
         operation_summary="Get User List",
         operation_description="Get list of all users in the system, including id and username information",
-        manual_parameters=[
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="JWT Token (obtained via /user/login endpoint), format: Bearer {token}",
-                required=True,
-            )
-        ],
         query_serializer=BaseGetRequestSerializer(),
         responses={
             200: openapi.Response(description="Get successful", schema=UserListResponseSerializer(many=True)),
@@ -154,15 +145,6 @@ class UserCreateView(BaseAPIView):
     @swagger_auto_schema(
         operation_summary="Create User",
         operation_description="Admin creates new user, supports selecting user groups",
-        manual_parameters=[
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="JWT Token (obtained via /user/login endpoint), format: Bearer {token}",
-                required=True,
-            )
-        ],
         request_body=UserCreateRequestSerializer(),
         responses={
             201: openapi.Response(description="Creation successful", schema=BaseResponseSerializer),
@@ -188,15 +170,6 @@ class CurrentUserView(BaseAPIView):
     @swagger_auto_schema(
         operation_summary="Get User Detail",
         operation_description="Get detailed information of specified user based on user ID, including id, username, email, permissions, etc.",
-        manual_parameters=[
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="JWT Token (obtained via /user/login endpoint), format: Bearer {token}",
-                required=True,
-            ),
-        ],
         responses={
             200: openapi.Response(description="Get successful", schema=UserDetailResponseSerializer()),
             401: openapi.Response(description="Unauthorized"),
@@ -225,15 +198,6 @@ class UserDetailView(BaseAPIView):
     @swagger_auto_schema(
         operation_summary="Update User Information",
         operation_description="Update information of specified user based on user ID, supports updating username, email, password, user groups, etc.",
-        manual_parameters=[
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="JWT Token (obtained via /user/login endpoint), format: Bearer {token}",
-                required=True,
-            )
-        ],
         request_body=UserUpdateRequestSerializer(),
         responses={
             200: openapi.Response(description="Update successful", schema=BaseResponseSerializer),
@@ -268,15 +232,6 @@ class UserDetailView(BaseAPIView):
     @swagger_auto_schema(
         operation_summary="Delete User",
         operation_description="Delete specified user based on user ID",
-        manual_parameters=[
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="JWT Token (obtained via /user/login endpoint), format: Bearer {token}",
-                required=True,
-            )
-        ],
         responses={
             200: openapi.Response(description="Delete successful", schema=BaseResponseSerializer),
             401: openapi.Response(description="Unauthorized"),
@@ -316,15 +271,6 @@ class GroupListView(BaseAPIView):
     @swagger_auto_schema(
         operation_summary="Get User Group List",
         operation_description="Get list of all user groups in the system",
-        manual_parameters=[
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="JWT Token (obtained via /user/login endpoint), format: Bearer {token}",
-                required=True,
-            )
-        ],
         query_serializer=BaseGetRequestSerializer(),
         responses={
             200: openapi.Response(description="Get successful", schema=GroupListResponseSerializer(many=True)),
@@ -347,15 +293,6 @@ class GroupDetailView(BaseAPIView):
     @swagger_auto_schema(
         operation_summary="Get User Group Detail",
         operation_description="Get detailed information of user group based on user group ID, including group members",
-        manual_parameters=[
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="JWT Token (obtained via /user/login endpoint), format: Bearer {token}",
-                required=True,
-            )
-        ],
         responses={
             200: openapi.Response(description="Get successful", schema=GroupDetailResponseSerializer()),
             401: openapi.Response(description="Unauthorized"),
@@ -375,15 +312,6 @@ class GroupDetailView(BaseAPIView):
     @swagger_auto_schema(
         operation_summary="Update User Group",
         operation_description="Update information of specified user group based on user group ID, supports updating group members",
-        manual_parameters=[
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="JWT Token (obtained via /user/login endpoint), format: Bearer {token}",
-                required=True,
-            )
-        ],
         request_body=GroupUpdateRequestSerializer(),
         responses={
             200: openapi.Response(description="Update successful", schema=BaseResponseSerializer),
@@ -419,15 +347,6 @@ class GroupDetailView(BaseAPIView):
     @swagger_auto_schema(
         operation_summary="Delete User Group",
         operation_description="Delete specified user group based on user group ID",
-        manual_parameters=[
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="JWT Token (obtained via /user/login endpoint), format: Bearer {token}",
-                required=True,
-            )
-        ],
         responses={
             201: openapi.Response(description="Delete successful", schema=BaseResponseSerializer),
             401: openapi.Response(description="Unauthorized"),
@@ -449,15 +368,6 @@ class GroupCreateView(BaseAPIView):
     @swagger_auto_schema(
         operation_summary="Create User Group",
         operation_description="Create new user group, supports adding users at the same time",
-        manual_parameters=[
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="JWT Token (obtained via /user/login endpoint), format: Bearer {token}",
-                required=True,
-            )
-        ],
         request_body=GroupCreateRequestSerializer(),
         responses={
             201: openapi.Response(description="Creation successful", schema=BaseResponseSerializer),

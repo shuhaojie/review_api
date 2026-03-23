@@ -3,6 +3,7 @@ from drf_yasg.utils import swagger_auto_schema
 from django.db.models import Q
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from api.common.utils.token_utils import FlexibleJWTAuthentication
 from api.app.doc.serializers.response import DocListResponseSerializer, DocMetaSerializer
 from api.app.doc.models import Doc
 from api.app.base.http.response import BaseResponse
@@ -18,22 +19,12 @@ from api.app.project.serializers.response import ProjectListResponseSerializer, 
 
 class ProjectListView(BaseAPIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [FlexibleJWTAuthentication]
 
     @swagger_auto_schema(
         operation_summary="Get project list",
         operation_description="Get project list",
         query_serializer=BaseGetRequestSerializer(),
-        manual_parameters=[
-            # Header parameter
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="Bearer token format: Bearer {token}, obtain jwt token through user/login",
-                required=True,
-            ),
-        ],
         responses={
             200: openapi.Response(description="Get successful", schema=ProjectListResponseSerializer)
         }
@@ -58,16 +49,6 @@ class ProjectListView(BaseAPIView):
         operation_summary="Create project",
         operation_description="Create project",
         request_body=CreateProjectSerializer,
-        manual_parameters=[
-            # Header parameter
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="Bearer token format: Bearer {token}, obtain jwt token through user/login",
-                required=True,
-            ),
-        ],
         responses={
             201: openapi.Response(description="Creation successful", schema=BaseResponseSerializer)
         }
@@ -86,22 +67,12 @@ class ProjectListView(BaseAPIView):
 
 class ProjectDetailView(BaseAPIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [FlexibleJWTAuthentication]
 
     @swagger_auto_schema(
         operation_summary="Get project file list",
         operation_description="Get project file list",
         query_serializer=BaseGetRequestSerializer(),
-        manual_parameters=[
-            # Header parameter
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="Bearer token format: Bearer {token}, obtain jwt token through user/login",
-                required=True,
-            ),
-        ],
         responses={
             200: openapi.Response(description="Get successful", schema=DocListResponseSerializer)
         }
@@ -118,16 +89,6 @@ class ProjectDetailView(BaseAPIView):
     @swagger_auto_schema(
         operation_summary="Delete project",
         operation_description="Delete project",
-        manual_parameters=[
-            # Header parameter
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="Bearer token format: Bearer {token}, obtain jwt token through user/login",
-                required=True,
-            ),
-        ],
         responses={
             201: openapi.Response(description="Deletion successful", schema=BaseResponseSerializer)
         }

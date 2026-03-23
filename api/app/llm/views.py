@@ -10,6 +10,7 @@ from rest_framework.parsers import JSONParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
+from api.common.utils.token_utils import FlexibleJWTAuthentication
 from api.app.base.http.response import BaseResponse
 from api.app.base.serializers.request import BaseGetRequestSerializer
 from api.app.base.serializers.response import BaseResponseSerializer
@@ -29,22 +30,12 @@ from env import env
 
 class PromptListView(BaseAPIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [FlexibleJWTAuthentication]
 
     @swagger_auto_schema(
         operation_summary="Get prompt list",
         operation_description="Get prompt list",
         query_serializer=BaseGetRequestSerializer(),
-        manual_parameters=[
-            # Header parameter
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="Bearer token format: Bearer {token}, obtain jwt token through user/login",
-                required=True,
-            ),
-        ],
         responses={
             200: openapi.Response(description="Get successful", schema=PromptListResponseSerializer)
         }
@@ -62,16 +53,6 @@ class PromptListView(BaseAPIView):
         operation_summary="Add prompt",
         operation_description="Add prompt",
         request_body=CreatePromptRequestSerializer,
-        manual_parameters=[
-            # Header parameter
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="Bearer token format: Bearer {token}, obtain jwt token through user/login",
-                required=True,
-            ),
-        ],
         responses={
             201: openapi.Response(description="Creation successful", schema=BaseResponseSerializer)
         }
@@ -90,21 +71,11 @@ class PromptListView(BaseAPIView):
 
 class PromptDetailView(BaseAPIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [FlexibleJWTAuthentication]
 
     @swagger_auto_schema(
         operation_summary="Get prompt details",
         operation_description="Get prompt details",
-        manual_parameters=[
-            # Header parameter
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="Bearer token format: Bearer {token}, obtain jwt token through user/login",
-                required=True,
-            ),
-        ],
         responses={
             200: openapi.Response(description="Get successful", schema=PromptListResponseSerializer)
         }
@@ -127,16 +98,6 @@ class PromptDetailView(BaseAPIView):
     @swagger_auto_schema(
         operation_summary="Delete prompt",
         operation_description="Delete prompt",
-        manual_parameters=[
-            # Header parameter
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="Bearer token format: Bearer {token}, obtain jwt token through user/login",
-                required=True,
-            ),
-        ],
         responses={
             201: openapi.Response(description="Deletion successful", schema=BaseResponseSerializer)
         }
@@ -150,16 +111,6 @@ class PromptDetailView(BaseAPIView):
         operation_summary="Update prompt",
         operation_description="Full/partial update",
         request_body=UpdatePromptRequestSerializer,
-        manual_parameters=[
-            # Header parameter
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="Bearer token format: Bearer {token}, obtain jwt token through user/login",
-                required=True,
-            ),
-        ],
         responses={200: openapi.Response("Update successful", BaseResponseSerializer)}
     )
     def put(self, request, *args, **kwargs):
@@ -180,22 +131,12 @@ class PromptDetailView(BaseAPIView):
 
 class ProviderListView(BaseAPIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [FlexibleJWTAuthentication]
 
     @swagger_auto_schema(
         operation_summary="Get LLM list",
         operation_description="Get LLM list",
         query_serializer=BaseGetRequestSerializer(),
-        manual_parameters=[
-            # Header parameter
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="Bearer token format: Bearer {token}, obtain jwt token through user/login",
-                required=True,
-            ),
-        ],
         responses={
             200: openapi.Response(description="Get successful", schema=LLMProviderResponseSerializer)
         }
@@ -213,22 +154,12 @@ class ProviderListView(BaseAPIView):
 
 class ProviderDetailView(BaseAPIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [FlexibleJWTAuthentication]
 
     @swagger_auto_schema(
         operation_summary="Update LLM",
         operation_description="Full/partial update",
         request_body=UpdatePromptRequestSerializer,
-        manual_parameters=[
-            # Header parameter
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="Bearer token format: Bearer {token}, obtain jwt token through user/login",
-                required=True,
-            ),
-        ],
         responses={200: openapi.Response("Update successful", BaseResponseSerializer)}
     )
     def put(self, request, *args, **kwargs):
@@ -271,21 +202,11 @@ class ProviderDetailView(BaseAPIView):
 
 class TestListView(BaseAPIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [FlexibleJWTAuthentication]
 
     @swagger_auto_schema(
         operation_summary="Get LLM test history",
         operation_description="Get LLM test history",
-        manual_parameters=[
-            # Header parameter
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="Bearer token format: Bearer {token}, obtain jwt token through user/login",
-                required=True,
-            ),
-        ],
         responses={
             200: openapi.Response(description="Get successful", schema=LLMTestReadResponseSerializer)
         }
@@ -303,16 +224,6 @@ class TestListView(BaseAPIView):
         operation_summary="Run test",
         operation_description="Run test",
         request_body=CreateLLMTestRequestSerializer(),
-        manual_parameters=[
-            # Header parameter
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="Bearer token format: Bearer {token}, obtain jwt token through user/login",
-                required=True,
-            ),
-        ],
         responses={
             201: openapi.Response(description="Test successful", schema=BaseResponseSerializer)
         }
@@ -358,21 +269,11 @@ class TestListView(BaseAPIView):
 
 class ExportLLMTestView(BaseAPIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [FlexibleJWTAuthentication]
 
     @swagger_auto_schema(
         operation_summary="Export LLM test history",
         operation_description="Export LLM test history as CSV file",
-        manual_parameters=[
-            # Header parameter
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="Bearer token format: Bearer {token}, obtain jwt token through user/login",
-                required=True,
-            ),
-        ],
         responses={
             200: openapi.Response(description="Export successful", schema=openapi.Schema(
                 type=openapi.TYPE_FILE,
@@ -435,22 +336,12 @@ class ExportLLMTestView(BaseAPIView):
 
 class TestSampleView(BaseAPIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [FlexibleJWTAuthentication]
 
     @swagger_auto_schema(
         operation_summary="Get LLM test files",
         operation_description="Get LLM test files",
         query_serializer=BaseGetRequestSerializer(),
-        manual_parameters=[
-            # Header parameter
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="Bearer token format: Bearer {token}, obtain jwt token through user/login",
-                required=True,
-            ),
-        ],
         responses={
             200: openapi.Response(description="Get successful", schema=TestSampleResponseSerializer)
         }
@@ -468,16 +359,6 @@ class TestSampleView(BaseAPIView):
         operation_summary="Add LLM test file",
         operation_description="Add LLM test file",
         request_body=CreateTestSampleRequestSerializer,
-        manual_parameters=[
-            # Header parameter
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="Bearer token format: Bearer {token}, obtain jwt token through user/login",
-                required=True,
-            ),
-        ],
         responses={
             201: openapi.Response(description="Creation successful", schema=BaseResponseSerializer)
         }
@@ -496,21 +377,11 @@ class TestSampleView(BaseAPIView):
 
 class TestSampleDetailView(BaseAPIView):
     permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [FlexibleJWTAuthentication]
 
     @swagger_auto_schema(
         operation_summary="Get test document details",
         operation_description="Get test document details",
-        manual_parameters=[
-            # Header parameter
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="Bearer token format: Bearer {token}, obtain jwt token through user/login",
-                required=True,
-            ),
-        ],
         responses={
             200: openapi.Response(description="Get successful", schema=TestSampleDetailResponseSerializer)
         }
@@ -534,16 +405,6 @@ class TestSampleDetailView(BaseAPIView):
     @swagger_auto_schema(
         operation_summary="Delete test document",
         operation_description="Delete test document",
-        manual_parameters=[
-            # Header parameter
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="Bearer token format: Bearer {token}, obtain jwt token through user/login",
-                required=True,
-            ),
-        ],
         responses={
             201: openapi.Response(description="Deletion successful", schema=BaseResponseSerializer)
         }
@@ -557,16 +418,6 @@ class TestSampleDetailView(BaseAPIView):
         operation_summary="Update LLM",
         operation_description="Full/partial update",
         request_body=UpdateTestSampleRequestSerializer,
-        manual_parameters=[
-            # Header parameter
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="Bearer token format: Bearer {token}, obtain jwt token through user/login",
-                required=True,
-            ),
-        ],
         responses={200: openapi.Response("Update successful", TestSampleDetailResponseSerializer)}
     )
     def put(self, request, *args, **kwargs):
@@ -591,21 +442,12 @@ class PromptBatchDeleteView(BaseAPIView):
     Batch delete prompts
     """
     permission_classes = [IsAuthenticated]
-    authentication_classes = [JWTAuthentication]
+    authentication_classes = [FlexibleJWTAuthentication]
     parser_classes = [JSONParser]
 
     @swagger_auto_schema(
         operation_summary="Batch delete prompts",
         operation_description="Batch delete prompts, support soft delete",
-        manual_parameters=[
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="Bearer token format: Bearer {token}, obtain jwt token through user/login",
-                required=True,
-            ),
-        ],
         request_body=openapi.Schema(
             type=openapi.TYPE_OBJECT,
             required=['ids'],
@@ -727,16 +569,6 @@ class SetDefaultView(APIView):
     @swagger_auto_schema(
         operation_summary="Set as system default parameters",
         operation_description="Set as system default parameters",
-        manual_parameters=[
-            # Header parameter
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="Bearer token format: Bearer {token}, obtain jwt token through user/login",
-                required=True,
-            ),
-        ],
         responses={
             201: openapi.Response(description="Setting successful", schema=BaseResponseSerializer)
         }

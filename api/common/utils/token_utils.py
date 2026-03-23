@@ -84,3 +84,16 @@ class TokenDecoder:
 
 
 token_decoder = TokenDecoder()
+
+
+from rest_framework_simplejwt.authentication import JWTAuthentication
+
+
+class FlexibleJWTAuthentication(JWTAuthentication):
+    """支持直接粘贴 token（不需要 Bearer 前缀）"""
+
+    def get_raw_token(self, header):
+        parts = header.split()
+        if len(parts) == 1:
+            return parts[0]
+        return super().get_raw_token(header)

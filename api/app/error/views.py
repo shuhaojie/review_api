@@ -20,16 +20,6 @@ class ErrorListView(BaseAPIView):
         operation_summary="错误列表页",
         operation_description="错误列表页, 展示具体的错误信息",
         query_serializer=ErrorListRequestSerializer(),
-        manual_parameters=[
-            # Header 参数
-            openapi.Parameter(
-                name="Authorization",
-                in_=openapi.IN_HEADER,
-                type=openapi.TYPE_STRING,
-                description="Bearer token 格式: Bearer {token}, 通过user/login获取 jwt token",
-                required=True,
-            ),
-        ],
         responses={
             200: openapi.Response(description="获取成功", schema=ErrorListResponseSerializer)
         }
