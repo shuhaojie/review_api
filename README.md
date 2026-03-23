@@ -1,6 +1,6 @@
 # Review API
 
-A Django REST Framework backend that automates document review using LLM providers. It detects text errors and financial discrepancies in uploaded documents, tracks review status, and exposes a clean REST API consumed by a frontend application.
+A Django REST Framework backend that automates document review using LLM providers. It detects text errors and financial discrepancies in uploaded documents, tracks review status.
 
 ## Features
 
