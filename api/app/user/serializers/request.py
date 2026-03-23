@@ -5,21 +5,42 @@ from api.app.user.models import User, Group
 
 
 class RegisterRequestSerializer(BaseRequestValidationSerializer):
-    username = serializers.CharField(min_length=3, max_length=32)
+    username = serializers.RegexField(
+        r'^[a-zA-Z0-9_-]+$',
+        min_length=3,
+        max_length=32,
+        error_messages={'invalid': 'Username may only contain letters, numbers, underscores, and hyphens.'}
+    )
     email = serializers.EmailField()
-    password = serializers.CharField(min_length=5, write_only=True)
+    password = serializers.CharField(min_length=8, write_only=True)
     password_confirm = serializers.CharField(write_only=True)
     verification_code = serializers.CharField(max_length=6, min_length=6)
+    terms_accepted = serializers.BooleanField()
+
+    def validate_terms_accepted(self, value):
+        if not value:
+            raise serializers.ValidationError("You must accept the terms of service to register.")
+        return value
+
+    def validate_password(self, value):
+        if not any(c.isalpha() for c in value):
+            raise serializers.ValidationError("Password must contain at least one letter.")
+        if not any(c.isdigit() for c in value):
+            raise serializers.ValidationError("Password must contain at least one number.")
+        return value
 
     def validate(self, attrs):
         if attrs['password'] != attrs.pop('password_confirm'):
             raise serializers.ValidationError('Passwords do not match.')
         if User.objects.filter(username=attrs['username']).exists():
             raise serializers.ValidationError('That username is already taken.')
+        if User.objects.filter(email=attrs['email']).exists():
+            raise serializers.ValidationError('That email address is already registered.')
         return attrs
 
     def create(self, validated_data):
         validated_data.pop('verification_code')
+        validated_data.pop('terms_accepted')
         if validated_data["username"] in env.SUPER_USER_LIST:
             validated_data['is_superuser'] = 1
         validated_data["is_deleted"] = 0
@@ -35,11 +56,6 @@ class LoginRequestSerializer(BaseRequestValidationSerializer):
 class EmailVerificationRequestSerializer(BaseRequestValidationSerializer):
     """Email verification code request serializer."""
     email = serializers.EmailField(required=True)
-
-    def validate_email(self, value):
-        if User.objects.filter(email=value).exists():
-            raise serializers.ValidationError("This email address is already registered.")
-        return value
 
 
 class GroupCreateRequestSerializer(BaseRequestValidationSerializer):

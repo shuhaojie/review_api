@@ -4,6 +4,17 @@ from api.app.base.serializers.response import BaseResponseSerializer
 from api.app.user.models import User, Group
 
 
+class RegisterResponseSerializer(BaseResponseSerializer):
+    class RegisterDataSerializer(serializers.Serializer):
+        id = serializers.IntegerField()
+        username = serializers.CharField()
+        email = serializers.EmailField()
+        access = serializers.CharField(help_text="JWT access token")
+        refresh = serializers.CharField(help_text="JWT refresh token")
+
+    data = RegisterDataSerializer()
+
+
 class LoginResponseSerializer(BaseResponseSerializer):
     class LoginDataSerializer(serializers.Serializer):
         refresh = serializers.CharField()
