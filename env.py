@@ -21,8 +21,8 @@ class ENV:
     ALLOWED_HOSTS = config("ALLOWED_HOSTS", default="*", cast=Csv())
     # mysql configuration
     DB_NAME = config("DB_NAME", default="review")
-    DB_USER = config("DB_USER", default="root")
-    DB_PASSWORD = config("DB_PASSWORD", default="root")
+    DB_USER = config("DB_USER", default="postgres")
+    DB_PASSWORD = config("DB_PASSWORD", default="postgres")
     DB_HOST = config("DB_HOST", default="localhost")
     DB_PORT = config("DB_PORT", default="5432")
 
