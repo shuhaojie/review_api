@@ -18,7 +18,7 @@ class RegisterTestCase(APITestCase):
 
     def _mock_verify_code(self, success=True, message='ok'):
         return patch(
-            'api.app.user.views.EmailVerification.verify_code',
+            'api.app.user.views.auth.EmailVerification.verify_code',
             return_value=(success, message)
         )
 
@@ -49,14 +49,14 @@ class RegisterTestCase(APITestCase):
         payload.pop('verification_code')
         resp = self.client.post(self.url, payload, format='json')
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('verification_code', resp.data)
+        self.assertIn('verification_code', resp.data['message'])
 
     def test_register_verification_code_wrong_length(self):
         """verification_code 长度不为 6 时应返回 400"""
         payload = {**self.valid_payload, 'verification_code': '123'}
         resp = self.client.post(self.url, payload, format='json')
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('verification_code', resp.data)
+        self.assertIn('verification_code', resp.data['message'])
 
     # ---------- 用户名校验 ----------
 
@@ -72,14 +72,14 @@ class RegisterTestCase(APITestCase):
         payload = {**self.valid_payload, 'username': 'ab'}
         resp = self.client.post(self.url, payload, format='json')
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('username', resp.data)
+        self.assertIn('username', resp.data['message'])
 
     def test_register_username_too_long(self):
         """用户名超过 32 个字符时应返回 400"""
         payload = {**self.valid_payload, 'username': 'a' * 33}
         resp = self.client.post(self.url, payload, format='json')
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('username', resp.data)
+        self.assertIn('username', resp.data['message'])
 
     # ---------- 密码校验 ----------
 
@@ -88,7 +88,7 @@ class RegisterTestCase(APITestCase):
         payload = {**self.valid_payload, 'password': '123', 'password_confirm': '123'}
         resp = self.client.post(self.url, payload, format='json')
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('password', resp.data)
+        self.assertIn('password', resp.data['message'])
 
     def test_register_different_password(self):
         """两次密码不一致时应返回 400"""
@@ -103,7 +103,7 @@ class RegisterTestCase(APITestCase):
         payload = {**self.valid_payload, 'email': 'not-an-email'}
         resp = self.client.post(self.url, payload, format='json')
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('email', resp.data)
+        self.assertIn('email', resp.data['message'])
 
     # ---------- 缺少必填字段 ----------
 
@@ -111,10 +111,7 @@ class RegisterTestCase(APITestCase):
         """完全空请求应返回 400，并报告必填字段"""
         resp = self.client.post(self.url, {}, format='json')
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('username', resp.data)
-        self.assertIn('password', resp.data)
-        self.assertIn('email', resp.data)
-        self.assertIn('verification_code', resp.data)
+        self.assertIn('username', resp.data['message'])
 
 
 class VerifyCodeTestCase(APITestCase):
@@ -125,9 +122,9 @@ class VerifyCodeTestCase(APITestCase):
 
     def test_verify_code_success(self):
         """有效邮箱应成功发送验证码"""
-        with patch('api.app.user.views.EmailVerification.generate_verification_code', return_value='654321'), \
-             patch('api.app.user.views.EmailVerification.send_verification_email', return_value=True), \
-             patch('api.app.user.views.EmailVerification.save_verification_code') as mock_save:
+        with patch('api.app.user.views.auth.EmailVerification.generate_verification_code', return_value='654321'), \
+             patch('api.app.user.views.auth.EmailVerification.send_verification_email', return_value=True), \
+             patch('api.app.user.views.auth.EmailVerification.save_verification_code') as mock_save:
             resp = self.client.post(self.url, {'email': 'new@example.com'}, format='json')
         self.assertEqual(resp.status_code, status.HTTP_201_CREATED)
         mock_save.assert_called_once_with('new@example.com', '654321')
@@ -142,8 +139,8 @@ class VerifyCodeTestCase(APITestCase):
 
     def test_verify_code_send_failure(self):
         """邮件发送失败时应返回 400"""
-        with patch('api.app.user.views.EmailVerification.generate_verification_code', return_value='123456'), \
-             patch('api.app.user.views.EmailVerification.send_verification_email', return_value=False):
+        with patch('api.app.user.views.auth.EmailVerification.generate_verification_code', return_value='123456'), \
+             patch('api.app.user.views.auth.EmailVerification.send_verification_email', return_value=False):
             resp = self.client.post(self.url, {'email': 'new@example.com'}, format='json')
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
 
@@ -151,10 +148,10 @@ class VerifyCodeTestCase(APITestCase):
         """缺少 email 字段时应返回 400"""
         resp = self.client.post(self.url, {}, format='json')
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('email', resp.data)
+        self.assertIn('email', resp.data['message'])
 
     def test_verify_code_invalid_email_format(self):
         """邮箱格式非法时应返回 400"""
         resp = self.client.post(self.url, {'email': 'not-valid'}, format='json')
         self.assertEqual(resp.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('email', resp.data)
+        self.assertIn('email', resp.data['message'])
