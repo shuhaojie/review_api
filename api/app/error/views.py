@@ -2,7 +2,6 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.permissions import IsAuthenticated
 
-from api.common.http.error_response import ErrorBaseResponse
 from api.app.base.views import BaseAPIView
 from api.common.http.response import BaseResponse
 from api.app.error.models import TextError, FinancialError
@@ -33,4 +32,4 @@ class ErrorListView(BaseAPIView):
         q = FinancialError.objects.filter(doc_id=doc_id, is_deleted=False, status=0)
         # 使用响应序列化器而不是请求序列化器，并设置many=True
         finance_data = FinanceErrorItemSerializer(q, many=True).data
-        return ErrorBaseResponse.success(data=data,finance_data=finance_data)
+        return BaseResponse.success(data=data, finance_data=finance_data)
