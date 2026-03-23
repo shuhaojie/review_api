@@ -63,7 +63,7 @@ DATABASES = {
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": [
-        "api.common.utils.token_utils.FlexibleJWTAuthentication",
+        "api.common.http.token.FlexibleJWTAuthentication",
     ],
     'DEFAULT_SCHEMA_CLASS': 'rest_framework.schemas.coreapi.AutoSchema',
 }

@@ -11,7 +11,7 @@ from api.common.http.response import BaseResponse
 from api.app.base.serializers.response import BaseResponseSerializer
 from api.app.base.serializers.request import BaseGetRequestSerializer
 from api.app.base.views import BaseAPIView
-from api.common.utils.pagination import PaginationHelper
+from api.common.http.pagination import PaginationHelper
 
 
 class UserListView(BaseAPIView):

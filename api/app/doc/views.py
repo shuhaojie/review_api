@@ -21,8 +21,8 @@ from api.app.llm.models import LLMProvider, Prompt
 from api.app.project.models import Project
 from api.settings.config import env, BASE_DIR
 from api.common.utils.logger import logger
-from api.common.utils.pagination import PaginationHelper
-from api.common.server.mq_server import RabbitMQMessageQueue
+from api.common.http.pagination import PaginationHelper
+from api.common.server.mq import RabbitMQMessageQueue
 
 
 class FileUploadView(BaseAPIView):

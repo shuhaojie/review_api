@@ -12,7 +12,7 @@ from api.common.http.response import BaseResponse
 from api.app.base.serializers.response import BaseResponseSerializer
 from api.app.base.views import BaseAPIView
 from api.common.utils.logger import logger
-from api.common.utils.email_utils import EmailVerification
+from api.common.utils.email import EmailVerification
 
 
 class RegisterView(BaseAPIView):

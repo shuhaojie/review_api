@@ -3,7 +3,7 @@ from drf_yasg.utils import swagger_auto_schema
 from django.db.models import Q
 from rest_framework.permissions import IsAuthenticated
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from api.common.utils.token_utils import FlexibleJWTAuthentication
+from api.common.http.token import FlexibleJWTAuthentication
 from api.app.doc.serializers.response import DocListResponseSerializer, DocMetaSerializer
 from api.app.doc.models import Doc
 from api.common.http.response import BaseResponse
@@ -11,7 +11,7 @@ from api.app.base.views import BaseAPIView
 from api.app.base.serializers.request import BaseGetRequestSerializer
 from api.app.base.serializers.response import BaseResponseSerializer
 from api.common.utils.logger import logger
-from api.common.utils.pagination import PaginationHelper
+from api.common.http.pagination import PaginationHelper
 from api.app.project.models import Project
 from api.app.project.serializers.request import CreateProjectSerializer
 from api.app.project.serializers.response import ProjectListResponseSerializer, ProjectSerializer

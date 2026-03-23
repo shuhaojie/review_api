@@ -10,7 +10,7 @@ from rest_framework.parsers import JSONParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
 from rest_framework_simplejwt.authentication import JWTAuthentication
-from api.common.utils.token_utils import FlexibleJWTAuthentication
+from api.common.http.token import FlexibleJWTAuthentication
 from api.common.http.response import BaseResponse
 from api.app.base.serializers.request import BaseGetRequestSerializer
 from api.app.base.serializers.response import BaseResponseSerializer
@@ -22,9 +22,9 @@ from api.app.llm.serializers.request import (CreatePromptRequestSerializer, Upda
 from api.app.llm.serializers.response import (PromptListResponseSerializer, LLMProviderResponseSerializer,
                                               LLMTestReadResponseSerializer, TestSampleResponseSerializer,
                                               TestSampleDetailResponseSerializer)
-from api.common.server.mq_server import RabbitMQMessageQueue
+from api.common.server.mq import RabbitMQMessageQueue
 from api.common.utils.logger import logger
-from api.common.utils.pagination import PaginationHelper
+from api.common.http.pagination import PaginationHelper
 from api.settings.config import env
 
 
