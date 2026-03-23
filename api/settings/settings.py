@@ -2,7 +2,7 @@ import os
 import sys
 from pathlib import Path
 from datetime import timedelta
-from env import env
+from api.settings.config import env
 from api.settings.constant import constant
 
 BASE_DIR = Path(__file__).resolve().parent.parent

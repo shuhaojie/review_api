@@ -26,7 +26,7 @@ django.setup()
 from api.app.llm.models import LLMProvider  # noqa
 from api.app.user.models import Group, User  # noqa
 from api.app.llm.models import Prompt  # noqa
-from env import env  # noqa
+from api.settings.config import env  # noqa
 
 
 def init_llm_providers():

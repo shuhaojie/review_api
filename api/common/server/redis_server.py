@@ -2,7 +2,7 @@
 import redis
 import json
 from api.common.utils.logger import logger
-from env import env
+from api.settings.config import env
 
 
 class RedisMessageQueue:

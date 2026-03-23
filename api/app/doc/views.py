@@ -19,7 +19,7 @@ from api.app.doc.serializers.response import (MultiFileUploadResponseSerializer,
 from api.app.doc.models import Doc
 from api.app.llm.models import LLMProvider, Prompt
 from api.app.project.models import Project
-from env import env, BASE_DIR
+from api.settings.config import env, BASE_DIR
 from api.common.utils.logger import logger
 from api.common.utils.pagination import PaginationHelper
 from api.common.server.mq_server import RabbitMQMessageQueue

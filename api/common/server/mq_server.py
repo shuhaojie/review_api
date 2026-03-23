@@ -2,7 +2,7 @@ import json
 import pika
 # from common_util.json_tools import json_dumps  # 包不可用，改用标准库 json
 from api.common.utils.logger import logger
-from env import env
+from api.settings.config import env
 
 
 class RabbitMQMessageQueue:

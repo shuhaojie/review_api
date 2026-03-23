@@ -3,7 +3,7 @@ import random
 import logging
 from django.core.mail import send_mail
 from django.core.cache import cache
-from env import env
+from api.settings.config import env
 
 logger = logging.getLogger(__name__)
 

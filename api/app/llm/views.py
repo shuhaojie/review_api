@@ -25,7 +25,7 @@ from api.app.llm.serializers.response import (PromptListResponseSerializer, LLMP
 from api.common.server.mq_server import RabbitMQMessageQueue
 from api.common.utils.logger import logger
 from api.common.utils.pagination import PaginationHelper
-from env import env
+from api.settings.config import env
 
 
 class PromptListView(BaseAPIView):

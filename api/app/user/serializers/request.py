@@ -1,6 +1,6 @@
 # myapp/serializers.py
 from rest_framework import serializers
-from env import env
+from api.settings.config import env
 from api.app.base.serializers.request import BaseRequestValidationSerializer
 from api.app.user.models import User, Group
 
