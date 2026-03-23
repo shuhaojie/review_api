@@ -12,7 +12,7 @@ from pathlib import Path
 
 # Get current script path
 current_script_path = Path(__file__).resolve()
-BASE_DIR = current_script_path.parents[3]
+BASE_DIR = current_script_path.parents[1]
 # Add project root directory to Python path
 sys.path.append(str(BASE_DIR))
 

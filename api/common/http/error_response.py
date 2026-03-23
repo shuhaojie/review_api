@@ -2,7 +2,7 @@
 from rest_framework.response import Response
 from rest_framework import status
 
-from api.app.base.http.response import BaseResponse
+from api.common.http.response import BaseResponse
 
 
 class ErrorBaseResponse(BaseResponse):

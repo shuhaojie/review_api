@@ -2,9 +2,9 @@ from drf_yasg import openapi
 from drf_yasg.utils import swagger_auto_schema
 from rest_framework.permissions import IsAuthenticated
 
-from api.app.base.http.error_response import ErrorBaseResponse
+from api.common.http.error_response import ErrorBaseResponse
 from api.app.base.views import BaseAPIView
-from api.app.base.http.response import BaseResponse
+from api.common.http.response import BaseResponse
 from api.app.error.models import TextError, FinancialError
 from api.app.error.serializers.request import ErrorListRequestSerializer
 from api.app.error.serializers.response import ErrorListResponseSerializer, ErrorItemSerializer, \

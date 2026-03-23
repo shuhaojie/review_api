@@ -47,8 +47,8 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
-ROOT_URLCONF = 'api.settings.urls'
-WSGI_APPLICATION = 'settings.wsgi.application'
+ROOT_URLCONF = 'api.urls'
+WSGI_APPLICATION = 'api.wsgi.application'
 
 DATABASES = {
     'default': {
@@ -131,7 +131,7 @@ LOGGING = {
         'file_apps': {
             'level': 'INFO',
             'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': os.path.join(BASE_DIR.parent, 'api/logs/app.log'),
+            'filename': os.path.join(BASE_DIR.parent, 'logs/app.log'),
             'when': 'midnight',
             'backupCount': 30,
             'formatter': 'app_verbose',
@@ -141,7 +141,7 @@ LOGGING = {
         'file_django': {
             'level': 'INFO',
             'class': 'logging.handlers.TimedRotatingFileHandler',
-            'filename': os.path.join(BASE_DIR.parent, 'api/logs/django.log'),
+            'filename': os.path.join(BASE_DIR.parent, 'logs/django.log'),
             'when': 'midnight',
             'backupCount': 30,
             'formatter': 'django_verbose',

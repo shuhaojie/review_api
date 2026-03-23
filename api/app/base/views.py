@@ -1,6 +1,6 @@
 from rest_framework.views import APIView
 from rest_framework.exceptions import NotAuthenticated, AuthenticationFailed, PermissionDenied
-from api.app.base.http.response import BaseResponse
+from api.common.http.response import BaseResponse
 from api.common.utils.logger import logger
 
 

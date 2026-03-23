@@ -37,7 +37,6 @@ RUN pip install --no-cache-dir -r requirements.txt -i https://pypi.tuna.tsinghua
 
 # 复制项目文件
 COPY ../api /review_api/api
-COPY ../env.py /review_api/
 COPY ../manage.py /review_api/
 COPY ../uwsgi.ini /review_api/
 COPY ../entrypoint.sh /review_api/

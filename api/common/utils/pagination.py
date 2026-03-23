@@ -1,6 +1,6 @@
 # utils/pagination.py
 from django.core.paginator import Paginator, EmptyPage
-from api.app.base.http.response import BaseResponse
+from api.common.http.response import BaseResponse
 
 
 class PaginationHelper:

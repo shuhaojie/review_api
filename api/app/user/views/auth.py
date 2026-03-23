@@ -8,7 +8,7 @@ from api.app.user.serializers.custom import CustomTokenObtainPairSerializer
 from api.app.user.serializers.request import (RegisterRequestSerializer, LoginRequestSerializer,
                                               EmailVerificationRequestSerializer)
 from api.app.user.serializers.response import LoginResponseSerializer
-from api.app.base.http.response import BaseResponse
+from api.common.http.response import BaseResponse
 from api.app.base.serializers.response import BaseResponseSerializer
 from api.app.base.views import BaseAPIView
 from api.common.utils.logger import logger

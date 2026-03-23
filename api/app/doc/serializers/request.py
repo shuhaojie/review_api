@@ -4,7 +4,7 @@ import uuid
 from rest_framework import serializers
 from django.core.files.storage import default_storage
 from django.core.files.uploadedfile import UploadedFile
-from api.settings.settings import env
+from api.settings.config import env
 from api.app.doc.models import Doc, DocStatus
 from api.app.project.models import Project
 from api.app.base.serializers.request import BaseRequestValidationSerializer
@@ -77,7 +77,7 @@ class MultiFileUploadRequestSerializer(BaseRequestValidationSerializer):
             # 生成唯一文件名
             file_uuid = f"{f_uuid}{file_extension}"
             # 注意这里不能存绝对路径, 否则Django会报错
-            save_path = f"api/data/upload/{file_uuid}"
+            save_path = f"data/upload/{file_uuid}"
             default_storage.save(save_path, file)
 
             file_info_list.append({

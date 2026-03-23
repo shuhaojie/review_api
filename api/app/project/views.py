@@ -6,7 +6,7 @@ from rest_framework_simplejwt.authentication import JWTAuthentication
 from api.common.utils.token_utils import FlexibleJWTAuthentication
 from api.app.doc.serializers.response import DocListResponseSerializer, DocMetaSerializer
 from api.app.doc.models import Doc
-from api.app.base.http.response import BaseResponse
+from api.common.http.response import BaseResponse
 from api.app.base.views import BaseAPIView
 from api.app.base.serializers.request import BaseGetRequestSerializer
 from api.app.base.serializers.response import BaseResponseSerializer

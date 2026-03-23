@@ -10,7 +10,7 @@ from rest_framework.permissions import IsAuthenticated
 
 from api.app.base.serializers.response import BaseResponseSerializer
 from api.app.base.views import BaseAPIView
-from api.app.base.http.response import BaseResponse
+from api.common.http.response import BaseResponse
 from api.app.base.serializers.request import BaseGetRequestSerializer
 from api.app.doc.serializers.request import (DocTaskRequestSerializer, SingleDocRequestSerializer,
                                              MultiFileUploadRequestSerializer)
@@ -253,7 +253,7 @@ class DocDownloadView(BaseAPIView):
         # 读取文件并返回文件流
         try:
             # 构建正确的文件路径
-            file_path = os.path.join(BASE_DIR, 'api/upload/data', doc.file_uuid)
+            file_path = os.path.join(BASE_DIR, 'data', 'upload', doc.file_uuid)
             logger.info(f"file_path: {file_path}")
             # 使用FileResponse，它会自动处理文件名编码和内容类型
             response = FileResponse(open(file_path, 'rb'), content_type='application/octet-stream')

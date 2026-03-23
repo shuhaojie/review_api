@@ -7,7 +7,7 @@ from api.app.user.serializers.request import UserCreateRequestSerializer, UserUp
 from api.app.user.serializers.response import (UserListResponseSerializer, UserMetaResponseSerializer,
                                                UserDetailResponseSerializer)
 from api.app.user.models import User
-from api.app.base.http.response import BaseResponse
+from api.common.http.response import BaseResponse
 from api.app.base.serializers.response import BaseResponseSerializer
 from api.app.base.serializers.request import BaseGetRequestSerializer
 from api.app.base.views import BaseAPIView
