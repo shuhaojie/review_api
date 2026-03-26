@@ -33,10 +33,6 @@ class UserListView(BaseAPIView):
             users = users.filter(Q(username__icontains=q) | Q(email__icontains=q))
         return PaginationHelper.paginate_queryset(users, request, UserMetaResponseSerializer)
 
-
-class UserCreateView(BaseAPIView):
-    permission_classes = [IsAuthenticated]
-
     @swagger_auto_schema(
         operation_summary="Create user",
         operation_description="Create a new user account. Optionally assign the user to one or more groups.",
@@ -44,6 +40,7 @@ class UserCreateView(BaseAPIView):
         responses={
             201: openapi.Response(description="Created successfully", schema=BaseResponseSerializer),
             401: openapi.Response(description="Unauthorized"),
+            403: openapi.Response(description="Forbidden"),
             400: openapi.Response(description="Validation error"),
         }
     )

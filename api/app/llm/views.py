@@ -65,7 +65,7 @@ class PromptListView(BaseAPIView):
         )
         if serializer.is_valid():
             serializer.save(creator_id=request.user.id)
-            return BaseResponse.success(message="Creation successful")
+            return BaseResponse.created(message="Creation successful")
         return BaseResponse.error(serializer.errors)
 
 
@@ -99,13 +99,13 @@ class PromptDetailView(BaseAPIView):
         operation_summary="Delete prompt",
         operation_description="Delete prompt",
         responses={
-            201: openapi.Response(description="Deletion successful", schema=BaseResponseSerializer)
+            200: openapi.Response(description="Deletion successful", schema=BaseResponseSerializer)
         }
     )
     def delete(self, request, *args, **kwargs):
         logger.info(f"username:{request.user.username}")
         Prompt.objects.filter(id=kwargs['pk']).update(is_deleted=True)
-        return BaseResponse.success(message="Deletion successful")
+        return BaseResponse.deleted(message="Deletion successful")
 
     @swagger_auto_schema(
         operation_summary="Update prompt",
@@ -371,7 +371,7 @@ class TestSampleView(BaseAPIView):
         )
         if serializer.is_valid():
             serializer.save(creator_id=request.user.id, uid=str(uuid.uuid4()))
-            return BaseResponse.success(message="Creation successful")
+            return BaseResponse.created(message="Creation successful")
         return BaseResponse.error(serializer.errors)
 
 
@@ -406,13 +406,13 @@ class TestSampleDetailView(BaseAPIView):
         operation_summary="Delete test document",
         operation_description="Delete test document",
         responses={
-            201: openapi.Response(description="Deletion successful", schema=BaseResponseSerializer)
+            200: openapi.Response(description="Deletion successful", schema=BaseResponseSerializer)
         }
     )
     def delete(self, request, *args, **kwargs):
         logger.info(f"username:{request.user.username}")
         TestSample.objects.filter(id=kwargs['pk']).update(is_deleted=True)
-        return BaseResponse.success(message="Deletion successful")
+        return BaseResponse.deleted(message="Deletion successful")
 
     @swagger_auto_schema(
         operation_summary="Update LLM",
@@ -570,7 +570,7 @@ class SetDefaultView(APIView):
         operation_summary="Set as system default parameters",
         operation_description="Set as system default parameters",
         responses={
-            201: openapi.Response(description="Setting successful", schema=BaseResponseSerializer)
+            200: openapi.Response(description="Setting successful", schema=BaseResponseSerializer)
         }
     )
     def post(self, request, pk):
@@ -600,4 +600,4 @@ class SetDefaultView(APIView):
         prompt.is_active = True
         prompt.save()
 
-        return BaseResponse.created("Setting successful")
+        return BaseResponse.success(message="Setting successful")

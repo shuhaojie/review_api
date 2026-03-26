@@ -2,11 +2,27 @@
 Centralized environment variable declaration & type conversion.
 os.environ must not appear in other files!
 """
+import json
 from pathlib import Path
-from typing import List
+from typing import Any, List, Tuple, Type
 
-from pydantic import field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, EnvSettingsSource, PydanticBaseSettingsSource, SettingsConfigDict
+
+# Fields that accept a plain comma-separated string (e.g. "a,b,c") in addition
+# to the standard JSON-array format (e.g. '["a","b","c"]').
+_CSV_FIELDS = frozenset({"ALLOWED_HOSTS", "SUPER_USER_LIST"})
+
+
+class _FlexibleEnvSource(EnvSettingsSource):
+    """Allow list fields to be supplied as CSV strings, not just JSON arrays."""
+
+    def prepare_field_value(self, field_name: str, field: Any, value: Any, value_is_complex: bool) -> Any:
+        if isinstance(value, str) and field_name in _CSV_FIELDS:
+            try:
+                return json.loads(value)
+            except (json.JSONDecodeError, ValueError):
+                return [item.strip() for item in value.split(",") if item.strip()]
+        return super().prepare_field_value(field_name, field, value, value_is_complex)
 
 # Project root directory (two levels up from this file)
 BASE_DIR = Path(__file__).resolve().parent.parent.parent
@@ -68,12 +84,16 @@ class ENV(BaseSettings):
     DEFAULT_TOP_P: float = 1.0
     DEFAULT_CHUNK_LENGTH: int = 8192
 
-    @field_validator("ALLOWED_HOSTS", "SUPER_USER_LIST", mode="before")
     @classmethod
-    def split_csv(cls, v):
-        if isinstance(v, str):
-            return [item.strip() for item in v.split(",") if item.strip()]
-        return v
+    def settings_customise_sources(
+        cls,
+        settings_cls: Type[BaseSettings],
+        init_settings: PydanticBaseSettingsSource,
+        env_settings: PydanticBaseSettingsSource,
+        dotenv_settings: PydanticBaseSettingsSource,
+        file_secret_settings: PydanticBaseSettingsSource,
+    ) -> Tuple[PydanticBaseSettingsSource, ...]:
+        return (init_settings, _FlexibleEnvSource(settings_cls), dotenv_settings, file_secret_settings)
 
 
 env = ENV()

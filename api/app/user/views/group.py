@@ -32,6 +32,31 @@ class GroupListView(BaseAPIView):
             groups = groups.filter(name__icontains=q)
         return PaginationHelper.paginate_queryset(groups, request, GroupMetaResponseSerializer)
 
+    @swagger_auto_schema(
+        operation_summary="Create group",
+        operation_description="Create a new user group. Optionally add users at creation time.",
+        request_body=GroupCreateRequestSerializer(),
+        responses={
+            201: openapi.Response(description="Created successfully", schema=BaseResponseSerializer),
+            401: openapi.Response(description="Unauthorized"),
+            400: openapi.Response(description="Validation error"),
+        }
+    )
+    def post(self, request):
+        serializer = GroupCreateRequestSerializer(data=request.data)
+        if serializer.is_valid():
+            group_name = serializer.validated_data['name']
+            description = serializer.validated_data.get('description', '')
+            if Group.objects.filter(name=group_name).exists():
+                return BaseResponse.error("A group with that name already exists.")
+            group = Group.objects.create(name=group_name, description=description)
+            user_ids = serializer.validated_data.get('user_ids', [])
+            if user_ids:
+                users = User.objects.filter(id__in=user_ids)
+                group.user_groups.set(users)
+            return BaseResponse.created()
+        return BaseResponse.error("Validation error", data=serializer.errors)
+
 
 class GroupDetailView(BaseAPIView):
     permission_classes = [IsAuthenticated]
@@ -64,7 +89,10 @@ class GroupDetailView(BaseAPIView):
         }
     )
     def put(self, request, group_id):
-        group = Group.objects.get(id=group_id)
+        try:
+            group = Group.objects.get(id=group_id)
+        except Group.DoesNotExist:
+            return BaseResponse.error("Group not found.", code=404)
         serializer = GroupUpdateRequestSerializer(data=request.data)
         if serializer.is_valid():
             if 'name' in serializer.validated_data:
@@ -98,32 +126,3 @@ class GroupDetailView(BaseAPIView):
             return BaseResponse.deleted()
         except Group.DoesNotExist:
             return BaseResponse.error("Group not found.", code=404)
-
-
-class GroupCreateView(BaseAPIView):
-    permission_classes = [IsAuthenticated]
-
-    @swagger_auto_schema(
-        operation_summary="Create group",
-        operation_description="Create a new user group. Optionally add users at creation time.",
-        request_body=GroupCreateRequestSerializer(),
-        responses={
-            201: openapi.Response(description="Created successfully", schema=BaseResponseSerializer),
-            401: openapi.Response(description="Unauthorized"),
-            400: openapi.Response(description="Validation error"),
-        }
-    )
-    def post(self, request):
-        serializer = GroupCreateRequestSerializer(data=request.data)
-        if serializer.is_valid():
-            group_name = serializer.validated_data['name']
-            description = serializer.validated_data.get('description', '')
-            if Group.objects.filter(name=group_name).exists():
-                return BaseResponse.error("A group with that name already exists.")
-            group = Group.objects.create(name=group_name, description=description)
-            user_ids = serializer.validated_data.get('user_ids', [])
-            if user_ids:
-                users = User.objects.filter(id__in=user_ids)
-                group.user_groups.set(users)
-            return BaseResponse.created()
-        return BaseResponse.error("Validation error", data=serializer.errors)

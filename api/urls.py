@@ -19,11 +19,11 @@ schema_view = get_schema_view(
 )
 
 api_urlpatterns = [
-    path('user', include('api.app.user.urls')),
-    path('project', include('api.app.project.urls')),
-    path('doc', include('api.app.doc.urls')),
-    path("llm", include("api.app.llm.urls")),
-    path("error", include("api.app.error.urls")),
+    path('users/', include('api.app.user.urls')),
+    path('projects/', include('api.app.project.urls')),
+    path('docs/', include('api.app.doc.urls')),
+    path('llm/', include('api.app.llm.urls')),
+    path('errors/', include('api.app.error.urls')),
 ]
 
 urlpatterns = [

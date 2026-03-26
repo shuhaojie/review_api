@@ -120,7 +120,7 @@ class FileTaskView(BaseAPIView):
                         logger.error(f"Failed to publish message: doc_id={file_info['doc_id']}")
                 queue.close_connection()
                 if all_success:
-                    return BaseResponse.success(message="Files uploaded and review tasks created.")
+                    return BaseResponse.created(message="Files uploaded and review tasks created.")
                 else:
                     # Roll back: delete all Doc records created in this request
                     for document in documents:
@@ -139,19 +139,14 @@ class RetryTaskView(BaseAPIView):
 
     @swagger_auto_schema(
         operation_summary="Retry review task",
-        operation_description="Re-publish the MQ message for a failed or unprocessed document by doc_id.",
-        request_body=SingleDocRequestSerializer,
+        operation_description="Re-publish the MQ message for a failed or unprocessed document.",
         responses={
             200: openapi.Response(description="Retry succeeded", schema=BaseResponseSerializer),
-            400: openapi.Response(description="Invalid parameters"),
             404: openapi.Response(description="Document not found or access denied"),
         }
     )
-    def post(self, request, *args, **kwargs):
-        doc_id = request.data.get("doc_id")
-        if not doc_id:
-            return BaseResponse.error(message="doc_id is required.")
-
+    def post(self, request, pk, *args, **kwargs):
+        doc_id = pk
         try:
             user_projects = Project.objects.filter(
                 Q(viewers__id=request.user.id) | Q(owner_id=request.user.id)
@@ -200,28 +195,15 @@ class DocDownloadView(BaseAPIView):
 
     @swagger_auto_schema(
         operation_summary="Download original file",
-        operation_description="Download the original uploaded file by doc_id.",
-        query_serializer=SingleDocRequestSerializer(),
-        manual_parameters=[
-            openapi.Parameter(
-                name="doc_id",
-                in_=openapi.IN_QUERY,
-                type=openapi.TYPE_STRING,
-                description="Document ID",
-                required=True,
-            ),
-        ],
+        operation_description="Download the original uploaded file.",
         responses={
             200: openapi.Response(description="File stream"),
             400: openapi.Response(description="Invalid parameters"),
             404: openapi.Response(description="Document not found or access denied"),
         }
     )
-    def get(self, request):
-        doc_id = request.GET.get("doc_id")
-        if not doc_id:
-            return BaseResponse.error(message="doc_id is required.")
-
+    def get(self, request, pk, *args, **kwargs):
+        doc_id = pk
         try:
             user_projects = Project.objects.filter(
                 Q(viewers__id=request.user.id) | Q(owner_id=request.user.id)
@@ -285,25 +267,14 @@ class DocDetailView(BaseAPIView):
 
     @swagger_auto_schema(
         operation_summary="Document detail",
-        operation_description="Retrieve detailed information for a document by doc_id.",
-        query_serializer=SingleDocRequestSerializer(),
-        manual_parameters=[
-            openapi.Parameter(
-                name="doc_id",
-                in_=openapi.IN_QUERY,
-                type=openapi.TYPE_STRING,
-                description="Document ID",
-                required=True,
-            ),
-        ],
+        operation_description="Retrieve detailed information for a document.",
         responses={
             200: openapi.Response(description="Document detail", schema=DocMetaSerializer),
-            400: openapi.Response(description="Invalid parameters"),
             404: openapi.Response(description="Document not found or access denied"),
         }
     )
-    def get(self, request):
-        doc_id = request.GET.get("doc_id")
+    def get(self, request, pk, *args, **kwargs):
+        doc_id = pk
         logger.info(f"doc_id from request: {doc_id!r}")
         doc = Doc.objects.get(id=doc_id, is_deleted=False)
         serializer = DocMetaSerializer(doc)
