@@ -59,6 +59,9 @@ DATABASES = {
         'PASSWORD': env.DB_PASSWORD,
         'HOST': env.DB_HOST,
         'PORT': env.DB_PORT,
+        'OPTIONS': {
+            'sslmode': 'require',
+        } if not env.DEBUG else {},
     }
 }
 
