@@ -1,5 +1,6 @@
 import os
 import uuid
+from django.core.files.storage import default_storage
 from django.http import FileResponse
 from urllib.parse import quote
 from drf_yasg import openapi
@@ -19,7 +20,7 @@ from api.app.doc.serializers.response import (MultiFileUploadResponseSerializer,
 from api.app.doc.models import Doc
 from api.app.llm.models import LLMProvider, Prompt
 from api.app.project.models import Project
-from api.settings.config import env, BASE_DIR
+from api.settings.config import env
 from api.common.utils.logger import logger
 from api.common.http.pagination import PaginationHelper
 from api.common.server.mq import RabbitMQMessageQueue
@@ -224,9 +225,9 @@ class DocDownloadView(BaseAPIView):
                 return BaseResponse.error(message="Document not found or access denied.")
 
         try:
-            file_path = os.path.join(BASE_DIR, 'data', 'upload', doc.file_uuid)
-            logger.info(f"file_path: {file_path}")
-            response = FileResponse(open(file_path, 'rb'), content_type='application/octet-stream')
+            storage_path = f"data/upload/{doc.file_uuid}"
+            logger.info(f"storage_path: {storage_path}")
+            response = FileResponse(default_storage.open(storage_path), content_type='application/octet-stream')
             response['Content-Disposition'] = f'attachment; filename="{quote(doc.file_name)}"'
             return response
         except Exception as e:
@@ -279,7 +280,6 @@ class DocDetailView(BaseAPIView):
         doc = Doc.objects.get(id=doc_id, is_deleted=False)
         serializer = DocMetaSerializer(doc)
         data = serializer.data
-        # Append the file URL
-        file_uuid = doc.file_uuid.split(".")[0]
-        data["file_path"] = f"{env.DOMAIN_NAME}/upload/{file_uuid}.pdf"
+        # Append the file URL (works for both local filesystem and S3)
+        data["file_path"] = default_storage.url(f"data/upload/{doc.file_uuid}")
         return BaseResponse.success(data=data)

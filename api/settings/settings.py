@@ -228,12 +228,33 @@ USE_I18N = True
 USE_TZ = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-STATIC_URL = '/static/'
-# Add static file directory configuration, pure backend without any interface (not using Admin, DRF browsing interface, Swagger) does not need this configuration
-STATICFILES_DIRS = []
-
-# Production environment static file collection directory, production environment needs static files to be collected
-STATIC_ROOT = BASE_DIR.parent / "static"
+if env.USE_S3:
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+            "OPTIONS": {
+                "bucket_name": env.AWS_STORAGE_BUCKET_NAME,
+                "region_name": env.AWS_S3_REGION_NAME,
+                "location": "media",        # uploaded files go to s3://bucket/media/
+                "file_overwrite": False,
+            },
+        },
+        "staticfiles": {
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+            "OPTIONS": {
+                "bucket_name": env.AWS_STORAGE_BUCKET_NAME,
+                "region_name": env.AWS_S3_REGION_NAME,
+                "location": "static",       # collected statics go to s3://bucket/static/
+                "file_overwrite": True,
+            },
+        },
+    }
+    STATIC_URL = f"https://{env.AWS_STORAGE_BUCKET_NAME}.s3.{env.AWS_S3_REGION_NAME}.amazonaws.com/static/"
+    STATIC_ROOT = BASE_DIR.parent / "static"
+else:
+    STATIC_URL = '/static/'
+    STATICFILES_DIRS = []
+    STATIC_ROOT = BASE_DIR.parent / "static"
 
 SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {

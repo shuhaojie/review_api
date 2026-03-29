@@ -77,6 +77,11 @@ class ENV(BaseSettings):
     MAX_FILE_SIZE: int = 10
     DOMAIN_NAME: str = "http://vectasurge.com"
 
+    # AWS S3 (set USE_S3=True to store uploaded files on S3 instead of local disk)
+    USE_S3: bool = False
+    AWS_STORAGE_BUCKET_NAME: str = ""
+    AWS_S3_REGION_NAME: str = "us-east-1"
+
     # Default LLM configuration
     DEFAULT_MODEL_NAME: str = "qwen3-32b"
     DEFAULT_MODEL_URL: str = "qwen3-32b"
