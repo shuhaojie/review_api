@@ -60,7 +60,8 @@ DATABASES = {
         'HOST': env.DB_HOST,
         'PORT': env.DB_PORT,
         'OPTIONS': {
-            'sslmode': 'require',
+            'sslmode': 'verify-full' if env.DB_SSL_CA else 'require',
+            **({'sslrootcert': env.DB_SSL_CA} if env.DB_SSL_CA else {}),
         } if not env.DEBUG else {},
     }
 }

@@ -46,6 +46,7 @@ class ENV(BaseSettings):
     DB_PASSWORD: str = "postgres"
     DB_HOST: str = "localhost"
     DB_PORT: str = "5432"
+    DB_SSL_CA: str = ""  # Path to RDS CA bundle, e.g. /path/to/global-bundle.pem
 
     # Redis
     REDIS_HOST: str = "redis"
