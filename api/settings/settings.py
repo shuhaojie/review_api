@@ -228,33 +228,46 @@ USE_I18N = True
 USE_TZ = True
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
+# STORAGES tells Django where to save files. It has two keys:
+#   "default"     — user-uploaded files (media), e.g. uploaded PDFs
+#   "staticfiles" — Django static files (static), e.g. CSS, JS, images
+#
+# USE_S3=True  → store files on S3
+# USE_S3=False → store files on local disk
 if env.USE_S3:
     STORAGES = {
+        # Storage backend for user-uploaded files.
+        # Replaces Django's default local file storage with S3Boto3Storage from django-storages.
         "default": {
             "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
             "OPTIONS": {
                 "bucket_name": env.AWS_STORAGE_BUCKET_NAME,
                 "region_name": env.AWS_S3_REGION_NAME,
-                "location": "media",        # uploaded files go to s3://bucket/media/
-                "file_overwrite": False,
+                "location": "media",        # files go to s3://bucket/media/xxx.pdf
+                "file_overwrite": False,    # never overwrite; append a suffix on name collision
             },
         },
+        # Storage backend for static files (used by the collectstatic management command).
         "staticfiles": {
             "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
             "OPTIONS": {
                 "bucket_name": env.AWS_STORAGE_BUCKET_NAME,
                 "region_name": env.AWS_S3_REGION_NAME,
-                "location": "static",       # collected statics go to s3://bucket/static/
-                "file_overwrite": True,
+                "location": "static",       # files go to s3://bucket/static/
+                "file_overwrite": True,     # overwrite on redeploy to always serve the latest version
             },
         },
     }
+    # Base URL for static files served from S3.
+    # e.g. <img src="/static/logo.png"> resolves to the full S3 URL below.
     STATIC_URL = f"https://{env.AWS_STORAGE_BUCKET_NAME}.s3.{env.AWS_S3_REGION_NAME}.amazonaws.com/static/"
+    # collectstatic gathers files into this local directory first, then uploads them to S3.
     STATIC_ROOT = BASE_DIR.parent / "static"
 else:
+    # Local mode: Django serves static files directly from disk under /static/.
     STATIC_URL = '/static/'
     STATICFILES_DIRS = []
-    STATIC_ROOT = BASE_DIR.parent / "static"
+    STATIC_ROOT = BASE_DIR.parent / "static"  # destination directory for collectstatic
 
 SWAGGER_SETTINGS = {
     'SECURITY_DEFINITIONS': {
