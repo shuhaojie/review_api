@@ -81,6 +81,8 @@ class ENV(BaseSettings):
     USE_S3: bool = False
     AWS_STORAGE_BUCKET_NAME: str = ""
     AWS_S3_REGION_NAME: str = "us-east-1"
+    AWS_ACCESS_KEY_ID: str = ""
+    AWS_SECRET_ACCESS_KEY: str = ""
 
     # Default LLM configuration
     DEFAULT_MODEL_NAME: str = "qwen3-32b"

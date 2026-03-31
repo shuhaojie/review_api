@@ -243,6 +243,8 @@ if env.USE_S3:
             "OPTIONS": {
                 "bucket_name": env.AWS_STORAGE_BUCKET_NAME,
                 "region_name": env.AWS_S3_REGION_NAME,
+                "access_key": env.AWS_ACCESS_KEY_ID,
+                "secret_key": env.AWS_SECRET_ACCESS_KEY,
                 "location": "media",        # files go to s3://bucket/media/xxx.pdf
                 "file_overwrite": False,    # never overwrite; append a suffix on name collision
             },
@@ -253,6 +255,8 @@ if env.USE_S3:
             "OPTIONS": {
                 "bucket_name": env.AWS_STORAGE_BUCKET_NAME,
                 "region_name": env.AWS_S3_REGION_NAME,
+                "access_key": env.AWS_ACCESS_KEY_ID,
+                "secret_key": env.AWS_SECRET_ACCESS_KEY,
                 "location": "static",       # files go to s3://bucket/static/
                 "file_overwrite": True,     # overwrite on redeploy to always serve the latest version
             },
